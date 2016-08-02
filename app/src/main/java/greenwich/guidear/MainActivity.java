@@ -112,7 +112,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
 
         }
     }
-    // test
+
     @Override
     public void onPause(){
         super.onPause();
