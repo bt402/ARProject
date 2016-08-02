@@ -6,6 +6,8 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -17,6 +19,10 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
+
 import org.w3c.dom.Text;
 
 public class MainActivity extends Activity implements SensorEventListener, LocationListener {
@@ -25,6 +31,8 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     float[] Geomag;
     private SensorManager mSensorManager;
     private LocationManager mLocationManager;
+    private Geocoder mGeoCoder;
+    List<Address> locationAddress;
     Sensor accelerometer;
     Sensor magnetometer;
 
@@ -78,15 +86,33 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         // Handle Location the longitude and latidue of the phone with Location Manager
         LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         TextView t = (TextView) findViewById(R.id.textView);
+        double longitude = 0.0;
+        double latitude = 0.0;
         // See if the phone has got permissions
         try{
             location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            double longitude = location.getLongitude();
-            double latitude = location.getLatitude();
+            longitude = location.getLongitude();
+            latitude = location.getLatitude();
             t.setText("Long: " + longitude + "°, Lat: " + latitude + "°");
         }
         catch (SecurityException e){
             t.setText(""+e);
+        }
+        try{
+            // Change the longitude and latidue into a address
+            mGeoCoder = new Geocoder(this, Locale.getDefault());
+            locationAddress = mGeoCoder.getFromLocation(latitude, longitude, 1);
+            String address = locationAddress.get(0).getAddressLine(0);
+            String city = locationAddress.get(0).getLocality();
+            String state = locationAddress.get(0).getAdminArea();
+            String country = locationAddress.get(0).getCountryName();
+            String postCode = locationAddress.get(0).getPostalCode();
+            String knownName = locationAddress.get(0).getFeatureName();
+
+            t.append("\n" + address + ", " + state + ", " + city + ", " + country + ", " + postCode + ", " + knownName);
+        }
+        catch (IOException ioe){
+            System.out.println(ioe);
         }
     }
 
