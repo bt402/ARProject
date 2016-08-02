@@ -11,6 +11,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
@@ -19,13 +20,20 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.places.Places;
+import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
+import com.google.android.gms.location.places.ui.PlacePicker;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
 import org.w3c.dom.Text;
 
-public class MainActivity extends Activity implements SensorEventListener, LocationListener {
+public class MainActivity extends Activity implements SensorEventListener, LocationListener, OnConnectionFailedListener {
 
     float[] Gravity;
     float[] Geomag;
@@ -35,6 +43,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     List<Address> locationAddress;
     Sensor accelerometer;
     Sensor magnetometer;
+    private GoogleApiClient mGoogleApiClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +58,8 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         */
 
 
+        // API KEY FOR Google Places
+        // AIzaSyDso6HCyfGZOnfdkD2AgrtGcHKdMKbdd64
 
 
         final Button buttonOne = (Button) findViewById(R.id.button);
@@ -70,6 +81,16 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
             }
         });
 
+
+        int PLACE_PICKER_REQUEST = 1;
+        PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+
+        try {
+            startActivityForResult(builder.build(this), PLACE_PICKER_REQUEST);
+        }
+        catch (Exception gna){
+
+        }
         // Create intent to access camera in Photo mode
         //Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // Start the camera
@@ -162,5 +183,10 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         String compassDirection = directions[ (int)Math.round((  ((double)degrees % 360) / 45)) % 8 ];
 
         t.setText(Float.toString(degrees) + " = " + compassDirection);
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
     }
 }
