@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="greenwich.guidear.MainActivity">
+
+    <FrameLayout
+        android:id="@+id/mySurfaceView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <greenwich.guidear.CapturePreview
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
+        </greenwich.guidear.CapturePreview>
+
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_below="@id/mySurfaceView"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center">
+    </LinearLayout>
+
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/res"
+        android:layout_above="@+id/textView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="25dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Attempting to Locate you (The Americans are spying on you)"
+        android:id="@+id/textView"
+        android:layout_marginBottom="86dp"
+        android:background="#ffffff"
+        android:textIsSelectable="true"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
+
+    <ImageView android:id="@+id/myImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Direction"
+        android:id="@+id/textView2"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="30dp"
+        android:background="#ffffff"
+        android:textIsSelectable="true"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pika"
+        android:id="@+id/button"
+        android:clickable="true"
+        android:enabled="true"
+        android:layout_alignBottom="@+id/res"
+        android:layout_centerHorizontal="true" />
+
+</RelativeLayout>
+
