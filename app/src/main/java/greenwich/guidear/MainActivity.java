@@ -11,39 +11,50 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.telephony.TelephonyManager;
-import android.view.View;
-import android.widget.Button;
-import android.widget.ImageView;
+import android.view.KeyEvent;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.places.Places;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.location.places.ui.PlacePicker;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
-import org.w3c.dom.Text;
-
 public class MainActivity extends Activity implements SensorEventListener, LocationListener, OnConnectionFailedListener {
 
-    float[] Gravity;
-    float[] Geomag;
     private SensorManager mSensorManager;
     private LocationManager mLocationManager;
     private Geocoder mGeoCoder;
     List<Address> locationAddress;
-    Sensor accelerometer;
-    Sensor magnetometer;
-    private GoogleApiClient mGoogleApiClient;
+    ArrayList<String> foundPOIs;
+
+    // Google Places
+    GooglePlaces googlePlaces;
+
+    // Places List
+    PlacesList nearPlaces;
+
+    // ListItems data
+    ArrayList<HashMap<String, String>> placesListItems = new ArrayList<HashMap<String,String>>();
+
+
+    // KEY Strings
+    public static String KEY_REFERENCE = "reference"; // id of the place
+    public static String KEY_NAME = "name"; // name of the place
+    public static String KEY_VICINITY = "vicinity"; // Place area name
+    double radius = 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,10 +70,10 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
 
 
         // API KEY FOR Google Places
-        // AIzaSyDso6HCyfGZOnfdkD2AgrtGcHKdMKbdd64
+        // AIzaSyDGeooGmYLYSSX9P9zl9dWEXnUC2Dkpj9U
 
 
-        final Button buttonOne = (Button) findViewById(R.id.button);
+        /*final Button buttonOne = (Button) findViewById(R.id.button);
         final ImageView image = (ImageView) findViewById(R.id.myImageView);
         buttonOne.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
@@ -79,10 +90,10 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
 
 
             }
-        });
+        });*/
 
 
-        int PLACE_PICKER_REQUEST = 1;
+        /*int PLACE_PICKER_REQUEST = 1;
         PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
 
         try {
@@ -90,7 +101,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         }
         catch (Exception gna){
 
-        }
+        }*/
         // Create intent to access camera in Photo mode
         //Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // Start the camera
@@ -135,6 +146,10 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         catch (IOException ioe){
             System.out.println(ioe);
         }
+        // calling background Async task to load Google Places
+        // After getting places from Google all the data is shown in listview
+        foundPOIs = new ArrayList<String>();
+        new LoadPlaces().execute();
     }
 
     @Override
@@ -187,6 +202,116 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
+    class LoadPlaces extends AsyncTask<String, String, String> {
+
+        /**
+         * getting Places JSON
+         * */
+        protected String doInBackground(String... args) {
+            // creating Places class object
+            googlePlaces = new GooglePlaces();
+
+
+            LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+            TextView t = (TextView) findViewById(R.id.textView);
+            double longitude = 0.0;
+            double latitude = 0.0;
+            // See if the phone has got permissions
+            Location location;
+            try{
+                location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                longitude = location.getLongitude();
+                latitude = location.getLatitude();
+            }
+            catch (SecurityException e){
+            }
+            // See if the phone has got permissions
+            try {
+                // Separeate your place types by PIPE symbol "|"
+                // If you want all types places make it as null
+                // Check list of types supported by google
+                //
+                String types = "cafe|restaurant|bar|grocery_or_supermarket|gas_station|taxi_stand|bank|bus_station|cemetery|park"; // Listing places only cafes, restaurants
+
+                // Radius in meters - increase this value if you don't find any places
+                // double radius = 1000; // 1000 meters
+
+                // get nearest places
+                nearPlaces = googlePlaces.search(latitude,
+                        longitude, radius, types);
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        /**
+         * After completing background task Dismiss the progress dialog
+         * and show the data in UI
+         * Always use runOnUiThread(new Runnable()) to update UI from background
+         * thread, otherwise you will get error
+         * **/
+        protected void onPostExecute(String file_url) {
+            // dismiss the dialog after getting all products
+            // updating UI from Background Thread
+            runOnUiThread(new Runnable() {
+                public void run() {
+                    /**
+                     * Updating parsed Places into LISTVIEW
+                     * */
+                    // Get json response status
+                    String status = nearPlaces.status;
+
+                    // Check for all possible status
+                    if(status.equals("OK")){
+                        // Successfully got places details
+                        if (nearPlaces.results != null) {
+                            // loop through each place
+                            for (Place p : nearPlaces.results) {
+                                HashMap<String, String> map = new HashMap<String, String>();
+
+                                // Place reference won't display in listview - it will be hidden
+                                // Place reference is used to get "place full details"
+                                map.put(KEY_REFERENCE, p.reference);
+
+                                // Place name
+                                map.put(KEY_NAME, p.name);
+
+
+                                // adding HashMap to ArrayList
+                                placesListItems.add(map);
+
+                                for (String s: map.keySet()){
+                                    String value = map.get(s).toString();
+                                    String[] arr = value.split(" ");
+                                    if (s == "name"){
+                                        System.out.println(value);
+                                        foundPOIs.add(value);
+                                    }
+                                }
+                            }
+                            ListView lv = (ListView) findViewById(R.id.listView);
+                            lv.setAdapter(new ArrayAdapter<String>(MainActivity.this, R.layout.simple_list_item_1, foundPOIs));
+
+                            /*
+                            TextView t = (TextView) findViewById(R.id.textView3);
+                            String allPoi = "";
+                            for (int i = 0; i < foundPOIs.size(); i++){
+                                allPoi += (i+1) + "." + foundPOIs.get(i) + ", ";
+                            }
+                            t.setText("Near you:"+allPoi);
+                            */
+                        }
+                    }
+                }
+            });
+
+        }
 
     }
 }
