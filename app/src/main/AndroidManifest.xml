@@ -17,13 +17,15 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDso6HCyfGZOnfdkD2AgrtGcHKdMKbdd64"/>
-        <activity android:name=".MainActivity">
+        <activity android:windowSoftInputMode="adjustPan" android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+        </activity>
+        <activity android:windowSoftInputMode="adjustPan" android:name="greenwich.guidear.SettingsActivity">
         </activity>
     </application>
 

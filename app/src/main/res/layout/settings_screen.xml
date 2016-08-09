@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#262626"
+    android:columnCount="3"
+    android:rowCount="8">
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="airport"
+        android:id="@+id/airportSwitch"
+        android:textColor="#ffffff"
+        android:layout_row="0"
+        android:layout_column="0" />
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="atm"
+        android:id="@+id/atmSwitch"
+        android:textColor="#ffffff"
+        android:layout_row="0"
+        android:layout_column="1" />
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="bank"
+        android:id="@+id/bankSwitch"
+        android:textColor="#ffffff"
+        android:layout_row="0"
+        android:layout_column="2" />
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="bar"
+        android:id="@+id/barSwitch"
+        android:textColor="#ffffff"
+        android:layout_row="1"
+        android:layout_column="0" />
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="bus_station"
+        android:id="@+id/bus_stationSwitch"
+        android:textColor="#ffffff"
+        android:layout_row="1"
+        android:layout_column="1" />
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="cafe"
+        android:id="@+id/cafeSwitch"
+        android:textColor="#ffffff"
+        android:layout_row="1"
+        android:layout_column="2" />
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="city_hall"
+        android:id="@+id/city_hallSwitch"
+        android:textColor="#ffffff"
+        android:layout_row="2"
+        android:layout_column="0" />
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="doctor"
+        android:id="@+id/doctorSwitch"
+        android:textColor="#ffffff"
+        android:layout_row="2"
+        android:layout_column="1" />
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="gas_station"
+        android:id="@+id/gas_stationSwitch"
+        android:textColor="#ffffff"
+        android:layout_row="2"
+        android:layout_column="2" />
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="hospital"
+        android:id="@+id/hospitalSwitch"
+        android:textColor="#ffffff"
+        android:layout_row="3"
+        android:layout_column="0" />
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="library"
+        android:id="@+id/librarySwitch"
+        android:textColor="#ffffff"
+        android:layout_row="3"
+        android:layout_column="1" />
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="liquor_store"
+        android:id="@+id/liquor_storeSwitch"
+        android:textColor="#ffffff"
+        android:layout_row="3"
+        android:layout_column="2" />
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="park"
+        android:id="@+id/parkSwitch"
+        android:textColor="#ffffff"
+        android:layout_row="4"
+        android:layout_column="0" />
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="school"
+        android:id="@+id/schoolSwitch"
+        android:textColor="#ffffff"
+        android:layout_row="4"
+        android:layout_column="1" />
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="restaurant"
+        android:id="@+id/restaurantSwitch"
+        android:textColor="#ffffff"
+        android:layout_row="4"
+        android:layout_column="2" />
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="train_station"
+        android:id="@+id/train_stationSwitch"
+        android:textColor="#ffffff"
+        android:layout_row="5"
+        android:layout_column="0" />
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="post_office"
+        android:id="@+id/post_officeSwitch"
+        android:textColor="#ffffff"
+        android:layout_row="5"
+        android:layout_column="1" />
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="university"
+        android:id="@+id/universitySwitch"
+        android:textColor="#ffffff"
+        android:layout_row="5"
+        android:layout_column="2" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/editText2"
+        android:text="1000"
+        android:background="#ffffff"
+        android:layout_row="6"
+        android:layout_column="1" />
+
+    <SeekBar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/seekBar"
+        android:layout_row="7"
+        android:layout_column="0"
+        android:layout_columnSpan="3"/>
+
+</GridLayout>

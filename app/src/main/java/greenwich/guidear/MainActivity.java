@@ -2,6 +2,7 @@ package greenwich.guidear;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -15,16 +16,16 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.os.Bundle;
 import android.view.KeyEvent;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ListAdapter;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
-import com.google.android.gms.location.places.ui.PlacePicker;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,13 +33,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
-public class MainActivity extends Activity implements SensorEventListener, LocationListener, OnConnectionFailedListener {
+public class MainActivity extends Activity implements SensorEventListener, LocationListener, OnConnectionFailedListener, KeyEvent.Callback {
 
     private SensorManager mSensorManager;
     private LocationManager mLocationManager;
     private Geocoder mGeoCoder;
     List<Address> locationAddress;
     ArrayList<String> foundPOIs;
+    ArrayList<String> foundLoc;
 
     // Google Places
     GooglePlaces googlePlaces;
@@ -48,13 +50,14 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
 
     // ListItems data
     ArrayList<HashMap<String, String>> placesListItems = new ArrayList<HashMap<String,String>>();
+    double longitude = 0.0;
+    double latitude = 0.0;
 
 
     // KEY Strings
     public static String KEY_REFERENCE = "reference"; // id of the place
     public static String KEY_NAME = "name"; // name of the place
     public static String KEY_VICINITY = "vicinity"; // Place area name
-    double radius = 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,6 +109,21 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         //Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // Start the camera
         //startActivityForResult(intent, 100);
+
+        ImageButton image = (ImageButton) findViewById(R.id.imageButton);
+        image.setImageResource(R.drawable.settings);
+
+
+        final Intent settingsScreen = new Intent(this, SettingsActivity.class);
+
+        image.setOnClickListener(new View.OnClickListener() {
+                                     @Override
+                                     public void onClick(View view) {
+                                            startActivity(settingsScreen);
+                                     }
+                                 }
+        );
+
         mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
         mLocationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
     }
@@ -118,8 +136,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         // Handle Location the longitude and latidue of the phone with Location Manager
         LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         TextView t = (TextView) findViewById(R.id.textView);
-        double longitude = 0.0;
-        double latitude = 0.0;
+
         // See if the phone has got permissions
         try{
             location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
@@ -149,7 +166,9 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         // calling background Async task to load Google Places
         // After getting places from Google all the data is shown in listview
         foundPOIs = new ArrayList<String>();
-        new LoadPlaces().execute();
+        foundLoc = new ArrayList<String>();
+        EditText r = (EditText) findViewById(R.id.editText);
+        new LoadPlaces().execute(r.getText().toString());
     }
 
     @Override
@@ -204,6 +223,15 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
+/*
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event){
+        if (keyCode == 66){
+            EditText r = (EditText) findViewById(R.id.editText);
+            r.setText(r.getText());
+        }
+        return true;
+    }*/
 
     class LoadPlaces extends AsyncTask<String, String, String> {
 
@@ -234,11 +262,11 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                 // If you want all types places make it as null
                 // Check list of types supported by google
                 //
-                String types = "cafe|restaurant|bar|grocery_or_supermarket|gas_station|taxi_stand|bank|bus_station|cemetery|park"; // Listing places only cafes, restaurants
+                String types = "cafe|restaurant|bar|grocery_or_supermarket|gas_station|taxi_stand|bank|cemetery|park|school"; // Listing places only cafes, restaurants
 
                 // Radius in meters - increase this value if you don't find any places
                 // double radius = 1000; // 1000 meters
-
+                double radius = Double.parseDouble(args[0]);
                 // get nearest places
                 nearPlaces = googlePlaces.search(latitude,
                         longitude, radius, types);
@@ -278,23 +306,41 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                                 // Place reference won't display in listview - it will be hidden
                                 // Place reference is used to get "place full details"
                                 map.put(KEY_REFERENCE, p.reference);
-
                                 // Place name
                                 map.put(KEY_NAME, p.name);
-
+                                /*
+                                "geometry" : {
+                                        "location" : {
+                                            "lat" : -33.86755700000001,
+                                            "lng" : 151.201527
+                                        },
+                                 */
+                                String strLoc = p.geometry.location.lat + " " + p.geometry.location.lng;
+                                foundLoc.add(strLoc);
 
                                 // adding HashMap to ArrayList
                                 placesListItems.add(map);
 
                                 for (String s: map.keySet()){
-                                    String value = map.get(s).toString();
-                                    String[] arr = value.split(" ");
-                                    if (s == "name"){
-                                        System.out.println(value);
-                                        foundPOIs.add(value);
-                                    }
+                                        String value = map.get(s).toString();
+                                        String[] arr = value.split(" ");
+                                        if (s == "name") {
+                                            //System.out.println(value);
+                                            foundPOIs.add(value);
+                                        }
                                 }
                             }
+
+                            TextView directionView = (TextView) findViewById(R.id.textView2);
+                            String[] arr = directionView.getText().toString().split(" ");
+                            System.out.println(arr[2]);
+                            EditText radiusValue = (EditText) findViewById(R.id.editText);
+                            double kilometer = Integer.parseInt(radiusValue.getText()+"") / 1000;
+
+                            double longitudeDir = kilometer / 111.2;
+                            double latitudeDir = kilometer / 111.32;
+
+
                             ListView lv = (ListView) findViewById(R.id.listView);
                             lv.setAdapter(new ArrayAdapter<String>(MainActivity.this, R.layout.simple_list_item_1, foundPOIs));
 
@@ -308,6 +354,11 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                             */
                         }
                     }
+                    else if (status.equals("ZERO_RESULTS")){
+                        foundPOIs.add("No places in radius");
+                    }
+                    ListView lv = (ListView) findViewById(R.id.listView);
+                    lv.setAdapter(new ArrayAdapter<String>(MainActivity.this, R.layout.simple_list_item_1, foundPOIs));
                 }
             });
 
