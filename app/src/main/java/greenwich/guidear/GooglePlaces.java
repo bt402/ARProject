@@ -58,7 +58,7 @@ public class GooglePlaces {
             request.getUrl().put("sensor", "false");
             if(types != null)
                 request.getUrl().put("types", types);
-
+            String url = ""+request.getUrl();
             PlacesList list = request.execute().parseAs(PlacesList.class);
             // Check log cat for places response status
             Log.d("Places Status", "" + list.status);
@@ -82,7 +82,6 @@ public class GooglePlaces {
             request.getUrl().put("sensor", "false");
 
             PlaceDetails place = request.execute().parseAs(PlaceDetails.class);
-
             return place;
 
         } catch (HttpResponseException e) {

@@ -18,9 +18,9 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -36,11 +36,14 @@ import java.util.Locale;
 public class MainActivity extends Activity implements SensorEventListener, LocationListener, OnConnectionFailedListener, KeyEvent.Callback {
 
     private SensorManager mSensorManager;
+    Sensor accelerometer;
+    Sensor magnetometer;
     private LocationManager mLocationManager;
     private Geocoder mGeoCoder;
     List<Address> locationAddress;
     ArrayList<String> foundPOIs;
     ArrayList<String> foundLoc;
+    ArrayList<String> directionPOIs;
 
     // Google Places
     GooglePlaces googlePlaces;
@@ -57,7 +60,8 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     // KEY Strings
     public static String KEY_REFERENCE = "reference"; // id of the place
     public static String KEY_NAME = "name"; // name of the place
-    public static String KEY_VICINITY = "vicinity"; // Place area name
+
+    String types = "cafe|restaurant|bar|school|train_station|shop|grocery_or_supermarket|bank";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,26 +80,6 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         // AIzaSyDGeooGmYLYSSX9P9zl9dWEXnUC2Dkpj9U
 
 
-        /*final Button buttonOne = (Button) findViewById(R.id.button);
-        final ImageView image = (ImageView) findViewById(R.id.myImageView);
-        buttonOne.setOnClickListener(new Button.OnClickListener() {
-            public void onClick(View v) {
-
-                if (buttonOne.getText().toString().equals("Pika")){
-                    image.setImageResource(R.drawable.pikachu);
-                    image.setVisibility(View.VISIBLE);
-                    buttonOne.setText("Chu");
-                }
-                else if (buttonOne.getText().toString().equals("Chu")){
-                    image.setVisibility(View.INVISIBLE);
-                    buttonOne.setText("Pika");
-                }
-
-
-            }
-        });*/
-
-
         /*int PLACE_PICKER_REQUEST = 1;
         PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
 
@@ -105,10 +89,6 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         catch (Exception gna){
 
         }*/
-        // Create intent to access camera in Photo mode
-        //Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        // Start the camera
-        //startActivityForResult(intent, 100);
 
         ImageButton image = (ImageButton) findViewById(R.id.imageButton);
         image.setImageResource(R.drawable.settings);
@@ -119,13 +99,39 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         image.setOnClickListener(new View.OnClickListener() {
                                      @Override
                                      public void onClick(View view) {
-                                            startActivity(settingsScreen);
+                                            settingsScreen.putExtra("defaultPOI", types);
+                                            startActivityForResult(settingsScreen, 1);
                                      }
                                  }
         );
 
+        Button updateBtn = (Button) findViewById(R.id.updateBtn);
+        updateBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                foundPOIs = new ArrayList<String>();
+                foundLoc = new ArrayList<String>();
+                directionPOIs = new ArrayList<String>();
+                EditText r = (EditText) findViewById(R.id.editText);
+                new LoadPlaces().execute(r.getText().toString());
+            }
+        });
+
         mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
         mLocationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
+        mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+        accelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        magnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+                if (resultCode == Activity.RESULT_OK) {
+                    TextView r = (TextView) findViewById(R.id.editText);
+                    r.setText(data.getStringExtra("radius").toString());
+                    types = data.getStringExtra("POI").toString();
+                    }
     }
 
     @Override
@@ -167,6 +173,8 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         // After getting places from Google all the data is shown in listview
         foundPOIs = new ArrayList<String>();
         foundLoc = new ArrayList<String>();
+        directionPOIs = new ArrayList<String>();
+
         EditText r = (EditText) findViewById(R.id.editText);
         new LoadPlaces().execute(r.getText().toString());
     }
@@ -184,13 +192,13 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     protected void onResume(){
         super.onResume();
         // Register movement
-        mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION), SensorManager.SENSOR_DELAY_GAME);
-
+        //mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION), SensorManager.SENSOR_DELAY_GAME);
+        mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI);
+        mSensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_UI);
         try{
             mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 1, this);
         }
         catch (SecurityException e){
-
         }
     }
 
@@ -199,7 +207,6 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         super.onPause();
         // To save battery
         mSensorManager.unregisterListener(this);
-
         try{
             mLocationManager.removeUpdates(this);
         }
@@ -207,34 +214,78 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     }
 
     // Handle sensor events
+    float[] mGravity;
+    float[] mGeomagnetic;
     @Override
     public void onSensorChanged(SensorEvent event){
-        float degrees = Math.round(event.values[0]);
 
         TextView t = (TextView) findViewById(R.id.textView2);
-
         String directions[] = {"N", "NE", "E", "SE", "S", "SW", "W", "NW"};
-        String compassDirection = directions[ (int)Math.round((  ((double)degrees % 360) / 45)) % 8 ];
 
-        t.setText(Float.toString(degrees) + " = " + compassDirection);
+        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
+            mGravity = event.values;
+        if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD)
+            mGeomagnetic = event.values;
+        if (mGravity != null && mGeomagnetic != null) {
+            float R[] = new float[9];
+            float I[] = new float[9];
+            boolean success = SensorManager.getRotationMatrix(R, I, mGravity, mGeomagnetic);
+            if (success) {
+                float orientation[] = new float[3];
+                SensorManager.getOrientation(R, orientation);
+                //System.out.println(Math.round(Math.toDegrees(orientation[0])));
+                double degrees = Math.toDegrees(orientation[0]);
+                if (Math.round(degrees) < 0){
+                    degrees += 360;
+                }
+                String compassDirection = directions[ (int)Math.round(((degrees % 360) / 45)) % 8 ];
+                t.setText(Float.toString(Math.round(Math.toDegrees(orientation[0]))) + " = " + compassDirection);
+            }
+    }
     }
 
     @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {}
 
+    public double poiAngle(double plat, double plon, double angle, double radius){
+        radius = radius / 110572;
+        double poilon = plon;
+        double poilat = plat;
+        double fpovlat = latitude + Math.cos(Math.toRadians(angle)) * radius;
+        double fpovlon = longitude + Math.sin(Math.toRadians(angle)) * radius;
+
+        double sidea = Math.sqrt(Math.pow((fpovlat - poilat),2) + Math.pow((fpovlon - poilon),2));
+        double sideb = Math.sqrt(Math.pow((latitude - poilat),2) + Math.pow((longitude - poilon),2));
+        double sidec = Math.sqrt(Math.pow((latitude - fpovlat),2) + Math.pow((longitude - fpovlon),2));
+
+        double cosAngle = (Math.pow(sideb,2) + Math.pow(sidec, 2) - Math.pow(sidea,2)) / (2 * sideb * sidec);
+        double radans = Math.acos(cosAngle);
+        double ans = Math.toDegrees(radans);
+        return ans;
     }
-/*
-    @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event){
-        if (keyCode == 66){
-            EditText r = (EditText) findViewById(R.id.editText);
-            r.setText(r.getText());
+
+    public boolean inFOV(double lon, double lat, double angle, double radius){
+        if (poiAngle(lon, lat, angle, radius) < 30){
+            return true;
         }
-        return true;
-    }*/
+        else {
+            return false;
+        }
+    }
+
+    public static double findDistance(double lon1, double lat1, double lon2, double lat2) {
+        int planetRadius = 6371;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLng = Math.toRadians(lon2 - lon1);
+        double sindLat = Math.sin(dLat / 2);
+        double sindLng = Math.sin(dLng / 2);
+        double a = Math.pow(sindLat, 2) + Math.pow(sindLng, 2)* Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2));
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double dist = planetRadius * c;
+        return Math.round(dist * 1000);
+    }
 
     class LoadPlaces extends AsyncTask<String, String, String> {
-
         /**
          * getting Places JSON
          * */
@@ -258,19 +309,12 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
             }
             // See if the phone has got permissions
             try {
-                // Separeate your place types by PIPE symbol "|"
-                // If you want all types places make it as null
-                // Check list of types supported by google
-                //
-                String types = "cafe|restaurant|bar|grocery_or_supermarket|gas_station|taxi_stand|bank|cemetery|park|school"; // Listing places only cafes, restaurants
-
                 // Radius in meters - increase this value if you don't find any places
                 // double radius = 1000; // 1000 meters
                 double radius = Double.parseDouble(args[0]);
                 // get nearest places
                 nearPlaces = googlePlaces.search(latitude,
                         longitude, radius, types);
-
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -330,35 +374,45 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                                         }
                                 }
                             }
-
                             TextView directionView = (TextView) findViewById(R.id.textView2);
                             String[] arr = directionView.getText().toString().split(" ");
                             System.out.println(arr[2]);
                             EditText radiusValue = (EditText) findViewById(R.id.editText);
-                            double kilometer = Integer.parseInt(radiusValue.getText()+"") / 1000;
+                            double kilometer = Integer.parseInt(radiusValue.getText().toString()) / 1000;
 
                             double longitudeDir = kilometer / 111.2;
                             double latitudeDir = kilometer / 111.32;
+                            TextView deg = (TextView) findViewById(R.id.textView2);
+                            String[] degrees = deg.getText().toString().split(" ");
+                            for (int i = 0; i < foundPOIs.size(); i++){
+                                // dis[0] = lat, dis[1] = long
+                                String[] dis = foundLoc.get(i).split(" ");
+                                double poiLat = Double.parseDouble(dis[0]);
+                                double poiLon = Double.parseDouble(dis[1]);
+                                double angle = Double.parseDouble(degrees[0]);
 
+                                String distance = ""+findDistance(longitude, latitude, poiLon, poiLat);
+                                if (inFOV(poiLat, poiLon, angle, Integer.parseInt(radiusValue.getText().toString()))){
+                                    directionPOIs.add(foundPOIs.get(i) + " " + distance + "m");
+                                }
+                            }
 
                             ListView lv = (ListView) findViewById(R.id.listView);
-                            lv.setAdapter(new ArrayAdapter<String>(MainActivity.this, R.layout.simple_list_item_1, foundPOIs));
+                            lv.setAdapter(new ArrayAdapter<String>(MainActivity.this, R.layout.simple_list_item_1, directionPOIs));
 
-                            /*
-                            TextView t = (TextView) findViewById(R.id.textView3);
-                            String allPoi = "";
-                            for (int i = 0; i < foundPOIs.size(); i++){
-                                allPoi += (i+1) + "." + foundPOIs.get(i) + ", ";
-                            }
-                            t.setText("Near you:"+allPoi);
-                            */
                         }
                     }
                     else if (status.equals("ZERO_RESULTS")){
-                        foundPOIs.add("No places in radius");
+                        directionPOIs.add("No places in radius");
+                    }
+                    else if (status.equals("OVER_QUERY_LIMIT")){
+                        directionPOIs.add("OVER_QUERY_LIMIT");
+                    }
+                    else if (directionPOIs.isEmpty()){
+                        directionPOIs.add("No places in radius");
                     }
                     ListView lv = (ListView) findViewById(R.id.listView);
-                    lv.setAdapter(new ArrayAdapter<String>(MainActivity.this, R.layout.simple_list_item_1, foundPOIs));
+                    lv.setAdapter(new ArrayAdapter<String>(MainActivity.this, R.layout.simple_list_item_1, directionPOIs));
                 }
             });
 

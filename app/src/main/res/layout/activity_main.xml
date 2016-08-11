@@ -75,8 +75,8 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="53dp"
         android:background="#ffffff"
-        android:inputType="phone"
-        android:text="1000"/>
+        android:inputType="number"
+        android:text="600"/>
 
     <ImageButton
         android:layout_width="wrap_content"
@@ -85,6 +85,14 @@
         android:layout_above="@+id/editText"
         android:layout_marginBottom="170dp"
         android:background="@android:color/transparent" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Force Update"
+        android:id="@+id/updateBtn"
+        android:layout_above="@+id/textView2"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>
 
