@@ -179,7 +179,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
                 if (resultCode == Activity.RESULT_OK) {
-                    data.getStringExtra("radius").toString();
+                    radius = data.getStringExtra("radius").toString();
                     types = data.getStringExtra("POI").toString();
                     }
     }
