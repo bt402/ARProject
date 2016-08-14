@@ -84,7 +84,7 @@ public class SettingsActivity extends Activity {
 
 
     private void SavePreferences(){
-        SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getSharedPreferences("SettingsSave", 1);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         // Radius of the search
         EditText radiusText = (EditText) findViewById(R.id.editText2);
@@ -154,11 +154,17 @@ public class SettingsActivity extends Activity {
         Switch everythingSwitch = (Switch) findViewById(R.id.nullSwitch);
         editor.putBoolean("nullSwitch", everythingSwitch.isChecked());
 
+        Switch electronics_storeStwich = (Switch) findViewById(R.id.electronics_storeSwitch);
+        editor.putBoolean("electronics_storeSwitch", electronics_storeStwich.isChecked());
+
+        final String POIString = PointOfInterestBuilder();
+        editor.putString("types", POIString);
+
         editor.commit();
     }
 
     private void LoadPreferences(){
-        SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getSharedPreferences("SettingsSave", 1);
         String radiusState = sharedPreferences.getString("r", "1000");
         EditText radiusText = (EditText) findViewById(R.id.editText2);
         radiusText.setText(radiusState);
@@ -248,11 +254,17 @@ public class SettingsActivity extends Activity {
         Boolean nullSwitchState = sharedPreferences.getBoolean("nullSwitch", false);
         nullSwitch.setChecked(nullSwitchState);
 
+        Switch electronics_storeSwitch = (Switch) findViewById(R.id.electronics_storeSwitch);
+        Boolean electronics_storeState = sharedPreferences.getBoolean("electronics_storeSwitch", false);
+        electronics_storeSwitch.setChecked(electronics_storeState);
+
     }
 
     public String PointOfInterestBuilder(){
         String poiBuilder = "";
         ArrayList<String> intrestList = new ArrayList<>();
+        SharedPreferences sharedPreferences = getSharedPreferences("SettingsSave", 1);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
 
         // All 18 switches urgh!
         Switch airportSwitch = (Switch) findViewById(R.id.airportSwitch);
@@ -276,6 +288,7 @@ public class SettingsActivity extends Activity {
         Switch grocery_or_supermarketSwitch = (Switch) findViewById(R.id.grocery_or_supermarketSwitch);
         Switch lodgingSwitch = (Switch) findViewById(R.id.lodgingSwitch);
         Switch nullSwitch = (Switch) findViewById(R.id.nullSwitch);
+        Switch electronics_storeSwitch = (Switch) findViewById(R.id.electronics_storeSwitch);
 
         if (airportSwitch.isChecked()){
             intrestList.add("airport");
@@ -340,6 +353,9 @@ public class SettingsActivity extends Activity {
         if (nullSwitch.isChecked()){
             intrestList = new ArrayList<>();
             intrestList.add("null");
+        }
+        if (electronics_storeSwitch.isChecked()){
+            intrestList.add("electronics_store");
         }
 
         for (int i = 0; i < intrestList.size(); i++){

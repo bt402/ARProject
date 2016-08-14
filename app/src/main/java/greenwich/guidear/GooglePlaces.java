@@ -58,7 +58,6 @@ public class GooglePlaces {
             request.getUrl().put("sensor", "false");
             if(types != null)
                 request.getUrl().put("types", types);
-            String url = ""+request.getUrl();
             PlacesList list = request.execute().parseAs(PlacesList.class);
             // Check log cat for places response status
             Log.d("Places Status", "" + list.status);
@@ -98,7 +97,7 @@ public class GooglePlaces {
         return transport.createRequestFactory(new HttpRequestInitializer() {
             public void initialize(HttpRequest request) {
                 GoogleHeaders headers = new GoogleHeaders();
-                headers.setApplicationName("AndroidHive-Places-Test");
+                headers.setApplicationName("Test");
                 request.setHeaders(headers);
                 JsonHttpParser parser = new JsonHttpParser(new JacksonFactory());
                 request.addParser(parser);

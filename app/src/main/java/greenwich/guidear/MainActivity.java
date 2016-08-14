@@ -3,6 +3,9 @@ package greenwich.guidear;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.Point;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -15,17 +18,22 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.os.Bundle;
+import android.view.Display;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
+
+import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -45,6 +53,11 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     ArrayList<String> foundLoc;
     ArrayList<String> directionPOIs;
 
+    // Information boxes components
+    // Use to remove the redundant box of screen
+    ArrayList<ImageView> imageList = new ArrayList<ImageView>();
+    ArrayList<TextView> textList = new ArrayList<TextView>();
+
     // Google Places
     GooglePlaces googlePlaces;
 
@@ -61,40 +74,41 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     public static String KEY_REFERENCE = "reference"; // id of the place
     public static String KEY_NAME = "name"; // name of the place
 
-    String types = "cafe|restaurant|bar|school|train_station|shop|grocery_or_supermarket|bank";
+    // String types = "cafe|restaurant|bar|school|train_station|shop|grocery_or_supermarket|bank";
+    // Defaults if no settings found
+    String types = "null";
+    String radius = "1000";
+
+    private ProgressBar spinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        /*  GET PHONE NUMBER
-        TelephonyManager mTelephonyMgr;
-        mTelephonyMgr = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
-        String phoneNumber = mTelephonyMgr.getLine1Number();
-        System.out.println(phoneNumber);
-        */
-
-
         // API KEY FOR Google Places
         // AIzaSyDGeooGmYLYSSX9P9zl9dWEXnUC2Dkpj9U
-
-
-        /*int PLACE_PICKER_REQUEST = 1;
-        PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
-
-        try {
-            startActivityForResult(builder.build(this), PLACE_PICKER_REQUEST);
-        }
-        catch (Exception gna){
-
-        }*/
 
         ImageButton image = (ImageButton) findViewById(R.id.imageButton);
         image.setImageResource(R.drawable.settings);
 
 
         final Intent settingsScreen = new Intent(this, SettingsActivity.class);
+        SharedPreferences sharedPreferences = null;
+        String radiusState = "1000";
+        String typesState = "null";
+        try {
+            // Access settings
+            sharedPreferences = getSharedPreferences("SettingsSave", 1);
+            radiusState = sharedPreferences.getString("r", "1000");
+            typesState = sharedPreferences.getString("types", "null");
+        }
+        catch (NullPointerException npe){
+            System.out.println(npe);
+        }
+
+
+        radius = radiusState;
+        types = typesState;
 
         image.setOnClickListener(new View.OnClickListener() {
                                      @Override
@@ -105,18 +119,6 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                                  }
         );
 
-        Button updateBtn = (Button) findViewById(R.id.updateBtn);
-        updateBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                foundPOIs = new ArrayList<String>();
-                foundLoc = new ArrayList<String>();
-                directionPOIs = new ArrayList<String>();
-                EditText r = (EditText) findViewById(R.id.editText);
-                new LoadPlaces().execute(r.getText().toString());
-            }
-        });
-
         mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
         mLocationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
         mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
@@ -124,12 +126,60 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         magnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
     }
 
+    public void addImg(double angle, String text){
+        RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.myRelativeLayout);
+        ImageView img = new ImageView(MainActivity.this);
+        TextView txt = new TextView(MainActivity.this);
+
+        Display d = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        d.getSize(size);
+        int width = size.x;
+        int height = size.y;
+
+        angle = (angle % 30) / 36;
+
+        int xPos = (int)Math.round(width*angle);
+        int yPos = (int)Math.round(height*angle);
+
+        img.setBackgroundResource(R.drawable.frame);
+        img.setScaleX(0.4f);
+        img.setScaleY(0.3f);
+        img.setX((-270) + xPos);
+        img.setY((-185) + yPos);
+        img.setAlpha(0.5f);
+
+        txt.setText(text);
+        txt.setTextSize(13);
+        txt.setWidth(270);
+        txt.setHeight(185);
+        txt.setSingleLine(false);
+        txt.setTextColor(Color.parseColor("#ffffff"));
+        txt.setX(xPos);
+        txt.setY(yPos + 2);
+
+        imageList.add(img);
+        textList.add(txt);
+
+        relativeLayout.addView(img);
+        relativeLayout.addView(txt);
+    }
+
+    public void removeRedundantBoxes(){
+        RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.myRelativeLayout);
+        for (int i = 0; i < imageList.size(); i++){
+            relativeLayout.removeView(imageList.get(i));
+        }
+        for (int i = 0; i < textList.size(); i++){
+            relativeLayout.removeView(textList.get(i));
+        }
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
                 if (resultCode == Activity.RESULT_OK) {
-                    TextView r = (TextView) findViewById(R.id.editText);
-                    r.setText(data.getStringExtra("radius").toString());
+                    data.getStringExtra("radius").toString();
                     types = data.getStringExtra("POI").toString();
                     }
     }
@@ -141,33 +191,16 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     public void onLocationChanged(Location location) {
         // Handle Location the longitude and latidue of the phone with Location Manager
         LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-        TextView t = (TextView) findViewById(R.id.textView);
-
+        spinner = (ProgressBar)findViewById(R.id.progressBar);
         // See if the phone has got permissions
         try{
+            spinner.setVisibility(View.VISIBLE);
             location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             longitude = location.getLongitude();
             latitude = location.getLatitude();
-            t.setText("Long: " + longitude + "°, Lat: " + latitude + "°");
         }
         catch (SecurityException e){
-            t.setText(""+e);
-        }
-        try{
-            // Change the longitude and latidue into a address
-            mGeoCoder = new Geocoder(this, Locale.getDefault());
-            locationAddress = mGeoCoder.getFromLocation(latitude, longitude, 1);
-            String address = locationAddress.get(0).getAddressLine(0);
-            String city = locationAddress.get(0).getLocality();
-            String state = locationAddress.get(0).getAdminArea();
-            String country = locationAddress.get(0).getCountryName();
-            String postCode = locationAddress.get(0).getPostalCode();
-            String knownName = locationAddress.get(0).getFeatureName();
 
-            t.append("\n" + address + ", " + state + ", " + city + ", " + country + ", " + postCode + ", " + knownName);
-        }
-        catch (IOException ioe){
-            System.out.println(ioe);
         }
         // calling background Async task to load Google Places
         // After getting places from Google all the data is shown in listview
@@ -175,8 +208,9 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         foundLoc = new ArrayList<String>();
         directionPOIs = new ArrayList<String>();
 
-        EditText r = (EditText) findViewById(R.id.editText);
-        new LoadPlaces().execute(r.getText().toString());
+        removeRedundantBoxes();
+        spinner.setVisibility(View.GONE);
+        new LoadPlaces().execute(radius);
     }
 
     @Override
@@ -192,7 +226,6 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     protected void onResume(){
         super.onResume();
         // Register movement
-        //mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION), SensorManager.SENSOR_DELAY_GAME);
         mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI);
         mSensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_UI);
         try{
@@ -221,6 +254,40 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
 
         TextView t = (TextView) findViewById(R.id.textView2);
         String directions[] = {"N", "NE", "E", "SE", "S", "SW", "W", "NW"};
+        // x axis = event.values[0]
+        // y axis = event.values[1]
+        // z axis = event.values[2]
+        float[] g = new float[3];
+        g = event.values.clone();
+        float orientation[] = new float[3];
+
+        double norm_Of_g = Math.sqrt(g[0] * g[0] + g[1] * g[1] + g[2] * g[2]);
+
+        // Normalize the accelerometer vector
+        g[0] = g[0] / Float.parseFloat(""+norm_Of_g);
+        g[1] = g[1] / Float.parseFloat(""+norm_Of_g);
+        g[2] = g[2] / Float.parseFloat(""+norm_Of_g);
+        int inclination = (int) Math.round(Math.toDegrees(Math.acos(g[2])));
+        if (inclination < 60 || inclination > 155)
+        {
+            // device is flat
+            for (int i = 0; i < imageList.size(); i++){
+                imageList.get(i).setVisibility(View.INVISIBLE);
+            }
+            for (int i = 0; i < textList.size(); i++){
+                textList.get(i).setVisibility(View.INVISIBLE);
+            }
+        }
+        else
+        {
+            // device is not flat
+            for (int i = 0; i < imageList.size(); i++){
+                imageList.get(i).setVisibility(View.VISIBLE);
+            }
+            for (int i = 0; i < textList.size(); i++){
+                textList.get(i).setVisibility(View.VISIBLE);
+            }
+        }
 
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
             mGravity = event.values;
@@ -231,17 +298,46 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
             float I[] = new float[9];
             boolean success = SensorManager.getRotationMatrix(R, I, mGravity, mGeomagnetic);
             if (success) {
-                float orientation[] = new float[3];
+                orientation = new float[3];
                 SensorManager.getOrientation(R, orientation);
                 //System.out.println(Math.round(Math.toDegrees(orientation[0])));
-                double degrees = Math.toDegrees(orientation[0]);
+                double degrees = Math.toDegrees((orientation[0]));
                 if (Math.round(degrees) < 0){
                     degrees += 360;
                 }
                 String compassDirection = directions[ (int)Math.round(((degrees % 360) / 45)) % 8 ];
                 t.setText(Float.toString(Math.round(Math.toDegrees(orientation[0]))) + " = " + compassDirection);
             }
+            updateView(orientation[0]);
     }
+
+    }
+
+    public void updateView(double ang){
+        final double angle = ang;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                removeRedundantBoxes();
+                if (longitude != 0 && latitude != 0){
+                    for (int i = 0; i < foundPOIs.size(); i++){
+                        // dis[0] = lat, dis[1] = long
+                        String[] dis = foundLoc.get(i).split(" ");
+                        double poiLat = Double.parseDouble(dis[0]);
+                        double poiLon = Double.parseDouble(dis[1]);
+
+                        String distance = ""+findDistance(longitude, latitude, poiLon, poiLat);
+
+                        double ang = poiAngle(poiLat, poiLon, angle, Integer.parseInt(radius));
+
+                        if (inFOV(poiLat, poiLon, angle, Integer.parseInt(radius))){
+                            addImg(ang, foundPOIs.get(i) + " " + distance + "m");
+                        }
+                    }
+
+                }
+            }
+        });
     }
 
     @Override
@@ -295,7 +391,6 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
 
 
             LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-            TextView t = (TextView) findViewById(R.id.textView);
             double longitude = 0.0;
             double latitude = 0.0;
             // See if the phone has got permissions
@@ -328,9 +423,11 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
          * Always use runOnUiThread(new Runnable()) to update UI from background
          * thread, otherwise you will get error
          * **/
+
         protected void onPostExecute(String file_url) {
             // dismiss the dialog after getting all products
             // updating UI from Background Thread
+            final TextView t = (TextView) findViewById(R.id.textView);
             runOnUiThread(new Runnable() {
                 public void run() {
                     /**
@@ -369,16 +466,13 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                                         String value = map.get(s).toString();
                                         String[] arr = value.split(" ");
                                         if (s == "name") {
-                                            //System.out.println(value);
                                             foundPOIs.add(value);
                                         }
                                 }
                             }
                             TextView directionView = (TextView) findViewById(R.id.textView2);
                             String[] arr = directionView.getText().toString().split(" ");
-                            System.out.println(arr[2]);
-                            EditText radiusValue = (EditText) findViewById(R.id.editText);
-                            double kilometer = Integer.parseInt(radiusValue.getText().toString()) / 1000;
+                            double kilometer = Integer.parseInt(radius) / 1000;
 
                             double longitudeDir = kilometer / 111.2;
                             double latitudeDir = kilometer / 111.32;
@@ -392,27 +486,30 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                                 double angle = Double.parseDouble(degrees[0]);
 
                                 String distance = ""+findDistance(longitude, latitude, poiLon, poiLat);
-                                if (inFOV(poiLat, poiLon, angle, Integer.parseInt(radiusValue.getText().toString()))){
+
+                                double ang = poiAngle(poiLat, poiLon, angle, Integer.parseInt(radius));
+
+                                if (inFOV(poiLat, poiLon, angle, Integer.parseInt(radius))){
                                     directionPOIs.add(foundPOIs.get(i) + " " + distance + "m");
+                                    addImg(ang, foundPOIs.get(i) + " " + distance + "m");
                                 }
                             }
 
-                            ListView lv = (ListView) findViewById(R.id.listView);
-                            lv.setAdapter(new ArrayAdapter<String>(MainActivity.this, R.layout.simple_list_item_1, directionPOIs));
-
+                            //ListView lv = (ListView) findViewById(R.id.listView);
+                            //lv.setAdapter(new ArrayAdapter<String>(MainActivity.this, R.layout.simple_list_item_1, directionPOIs));
                         }
                     }
                     else if (status.equals("ZERO_RESULTS")){
-                        directionPOIs.add("No places in radius");
+                        t.setText("No places in radius");
                     }
                     else if (status.equals("OVER_QUERY_LIMIT")){
-                        directionPOIs.add("OVER_QUERY_LIMIT");
+                        t.setText("OVER_QUERY_LIMIT");
                     }
                     else if (directionPOIs.isEmpty()){
-                        directionPOIs.add("No places in radius");
+                        t.setText("No places in radius");
                     }
-                    ListView lv = (ListView) findViewById(R.id.listView);
-                    lv.setAdapter(new ArrayAdapter<String>(MainActivity.this, R.layout.simple_list_item_1, directionPOIs));
+                    //ListView lv = (ListView) findViewById(R.id.listView);
+                    //lv.setAdapter(new ArrayAdapter<String>(MainActivity.this, R.layout.simple_list_item_1, directionPOIs));
                 }
             });
 

@@ -17,4 +17,6 @@ public class PlacesList implements Serializable {
     @Key
     public List<Place> results;
 
+    @Key
+    public String next_page_token;
 }
