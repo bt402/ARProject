@@ -66,6 +66,13 @@
         android:layout_marginBottom="170dp"
         android:background="@android:color/transparent" />
 
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageButton2"
+        android:layout_marginBottom="170dp"
+        android:background="@android:color/transparent" />
+
     <ProgressBar
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"

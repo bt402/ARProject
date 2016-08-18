@@ -1,5 +1,6 @@
 package greenwich.guidear;
 
+import android.os.AsyncTask;
 import android.util.Log;
 
 import com.google.api.client.googleapis.GoogleHeaders;
@@ -13,7 +14,9 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.http.json.JsonHttpParser;
 import com.google.api.client.json.jackson.JacksonFactory;
 
-@SuppressWarnings("deprecation")
+import java.util.ArrayList;
+import java.util.HashMap;
+
 public class GooglePlaces {
 
     /** Global instance of the HTTP transport. */
@@ -32,6 +35,8 @@ public class GooglePlaces {
     private double _longitude;
     private double _radius;
 
+    public static ArrayList<String> foundLoc;
+
     /**
      * Searching places
      * @param latitude - latitude of place
@@ -48,7 +53,6 @@ public class GooglePlaces {
         this._radius = radius;
 
         try {
-
             HttpRequestFactory httpRequestFactory = createRequestFactory(HTTP_TRANSPORT);
             HttpRequest request = httpRequestFactory
                     .buildGetRequest(new GenericUrl(PLACES_SEARCH_URL));
@@ -61,6 +65,14 @@ public class GooglePlaces {
             PlacesList list = request.execute().parseAs(PlacesList.class);
             // Check log cat for places response status
             Log.d("Places Status", "" + list.status);
+            if (list.results != null){
+                for (Place p : list.results) {
+                    String strLoc = p.geometry.location.lat + " " + p.geometry.location.lng;
+                    foundLoc.add(strLoc);
+                }
+            }
+
+            GoogleElevation.getElevation(foundLoc);
             return list;
 
         } catch (HttpResponseException e) {
@@ -68,25 +80,6 @@ public class GooglePlaces {
             return null;
         }
 
-    }
-
-    public PlaceDetails getPlaceDetails(String reference) throws Exception {
-        try {
-
-            HttpRequestFactory httpRequestFactory = createRequestFactory(HTTP_TRANSPORT);
-            HttpRequest request = httpRequestFactory
-                    .buildGetRequest(new GenericUrl(PLACES_DETAILS_URL));
-            request.getUrl().put("key", API_KEY);
-            request.getUrl().put("reference", reference);
-            request.getUrl().put("sensor", "false");
-
-            PlaceDetails place = request.execute().parseAs(PlaceDetails.class);
-            return place;
-
-        } catch (HttpResponseException e) {
-            System.out.println(e.getMessage());
-            throw e;
-        }
     }
 
     /**
@@ -105,4 +98,22 @@ public class GooglePlaces {
         });
     }
 
+    public PlaceDetails getPlaceDetails(String reference) throws Exception {
+        try {
+
+            HttpRequestFactory httpRequestFactory = createRequestFactory(HTTP_TRANSPORT);
+            HttpRequest request = httpRequestFactory
+                    .buildGetRequest(new GenericUrl(PLACES_DETAILS_URL));
+            request.getUrl().put("key", API_KEY);
+            request.getUrl().put("reference", reference);
+            request.getUrl().put("sensor", "false");
+
+            PlaceDetails place = request.execute().parseAs(PlaceDetails.class);
+
+            return place;
+
+        } catch (HttpResponseException e) {
+            throw e;
+        }
+    }
 }
