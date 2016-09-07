@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -24,6 +25,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
@@ -47,8 +49,9 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
 
     // Information boxes components
     // Use to remove the redundant box of screen
-    ArrayList<ImageView> imageList = new ArrayList<ImageView>();
-    ArrayList<TextView> textList = new ArrayList<TextView>();
+    ArrayList<ImageView> imageList = new ArrayList<>();
+    ArrayList<TextView> textList = new ArrayList<>();
+    ArrayList<ImageView> shuffleList = new ArrayList<>();
 
     // Google Places
     GooglePlaces googlePlaces;
@@ -73,12 +76,22 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
 
     private ProgressBar spinner;
 
+    static int indexIterator = 0;
+    ImageView shuffleImg;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         // API KEY FOR Google Places
         // AIzaSyDGeooGmYLYSSX9P9zl9dWEXnUC2Dkpj9U
+
+        // Check if Compass and/or Accelerometer are avaliable
+        SensorDialog sensorDialog = new SensorDialog();
+        sensorDialog.accelerometerExists(this);
+        // Check for network connection
+        NetworkManager networkManager = new NetworkManager();
+        networkManager.checkConnection(this);
 
         ImageButton settingsBtn = (ImageButton) findViewById(R.id.imageButton);
         ImageButton helpBtn = (ImageButton) findViewById(R.id.imageButton2);
@@ -93,9 +106,9 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         int height = size.y;
 
         helpBtn.setX(width - 192);
-
         final Intent settingsScreen = new Intent(this, SettingsActivity.class);
         final Intent helpScreen = new Intent(this, HelpActivity.class);
+        final Intent newSettingsScreen = new Intent(this, NewSettingsActivity.class);
 
         SharedPreferences sharedPreferences = null;
         String radiusState = "1000";
@@ -110,7 +123,6 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
             System.out.println(npe);
         }
 
-
         radius = radiusState;
         types = typesState;
 
@@ -118,7 +130,8 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                                      @Override
                                      public void onClick(View view) {
                                             settingsScreen.putExtra("defaultPOI", types);
-                                            startActivityForResult(settingsScreen, 1);
+                                            //startActivityForResult(settingsScreen, 1);
+                                            startActivityForResult(newSettingsScreen, 1);
                                      }
                                  }
         );
@@ -143,10 +156,19 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                     public void onClick(View view) {
                         removeRedundantBoxes();
                         new LoadPlaces().execute(radius);
+                        shuffleBoxes();
                     }
                 }
         );
 
+
+        shuffleImg = new ImageView(MainActivity.this);
+        shuffleImg.setImageResource(R.drawable.shuffle);
+        shuffleImg.setX((width / 2)-64);
+        shuffleImg.setScaleX(0.9f);
+        shuffleImg.setScaleY(0.9f);
+        shuffleImg.setVisibility(View.INVISIBLE);
+        relativeLayout.addView(shuffleImg);
 
         // Handle uncaught exceptions and email me the log
         // Setup handler for uncaught exceptions.
@@ -157,15 +179,15 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
             {
                 StringWriter errors = new StringWriter();
                 e.printStackTrace(new PrintWriter(errors));
-                Intent intent = new Intent (Intent.ACTION_SEND);
-                intent.setType ("plain/text");
-                intent.putExtra (Intent.EXTRA_EMAIL, new String[] {"marcinbrett@gmail.com"});
-                intent.putExtra (Intent.EXTRA_SUBJECT, "GuideAR log file (Courtesy of Josh T)");
-                //intent.putExtra (Intent.EXTRA_STREAM, Uri.parse ("file://" + fullName));
-                intent.putExtra (Intent.EXTRA_TEXT, e.getMessage() + " \n \n " + errors); // do this so some email clients don't complain about empty body.
-                startActivity (intent);
-                System.out.println(errors);
-                System.exit(1); // kill off the crashed app
+                    Intent intent = new Intent(Intent.ACTION_SEND);
+                    intent.setType("plain/text");
+                    intent.putExtra(Intent.EXTRA_EMAIL, new String[]{"marcinbrett@gmail.com"});
+                    intent.putExtra(Intent.EXTRA_SUBJECT, "GuideAR log file (Courtesy of Josh T)");
+                    //intent.putExtra (Intent.EXTRA_STREAM, Uri.parse ("file://" + fullName));
+                    intent.putExtra(Intent.EXTRA_TEXT, e.getMessage() + " \n \n " + errors); // do this so some email clients don't complain about empty body.
+                    startActivity(intent);
+                    System.out.println(errors);
+                    System.exit(1); // kill off the crashed app
             }
         });
 
@@ -219,8 +241,13 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         txt.setX(xPos);
         txt.setY(yPos + 2);
 
-        imageList.add(img);
-        textList.add(txt);
+        if (!textList.contains(text)){
+            imageList.add(img);
+            textList.add(txt);
+        }
+
+        int[] outLocation = new int[2];
+        img.getLocationOnScreen(outLocation);
 
         relativeLayout.addView(img);
         relativeLayout.addView(txt);
@@ -243,12 +270,77 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
 
     public void removeRedundantBoxes(){
         RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.myRelativeLayout);
+        shuffleImg.setVisibility(View.INVISIBLE);
         for (int i = 0; i < imageList.size(); i++){
             relativeLayout.removeView(imageList.get(i));
         }
         for (int i = 0; i < textList.size(); i++){
             relativeLayout.removeView(textList.get(i));
         }
+    }
+    ArrayList<ImageView> overlapList = new ArrayList<>();
+    ArrayList<TextView> overlapText = new ArrayList<>();
+    public void shuffleBoxes(){
+        overlapList.trimToSize();
+        overlapText.trimToSize();
+        // Left x
+        float leftX = 0;
+        // Right x
+        float rightX = 0;
+        // Bottom y
+        float botY = 0;
+        // TopY
+        float topY = 0;
+        for (int i = 0; i < imageList.size() - 1; i++) {
+            Rect box1 = new Rect();
+            imageList.get(i).getHitRect(box1);
+
+            Rect box2 = new Rect();
+            imageList.get(i+1).getHitRect(box2);
+
+            if (Rect.intersects(box1, box2)){
+                if (!overlapText.contains(textList.get(i))){
+                    System.out.println(textList.get(i).getText().toString() + " overlaps with " + textList.get(i + 1).getText().toString());
+                    overlapList.add(imageList.get(i));
+                    overlapText.add(textList.get(i));
+                    shuffleImg.setVisibility(View.VISIBLE);
+                }
+            }
+
+        }
+
+                shuffleImg.setOnClickListener(new View.OnClickListener() {
+                  @Override
+                  public void onClick(View view)
+                  {
+                      if (indexIterator >= textList.size()) {
+                              indexIterator = 0;
+                          imageList.get(indexIterator).setAlpha(0.5f);
+                          textList.get(indexIterator).setAlpha(0.5f);
+                          textList.get(indexIterator).setTextColor(Color.rgb(255,255,255));
+                      }
+                      if (indexIterator >= 1){
+                          imageList.get(indexIterator-1).setAlpha(0.5f);
+                          textList.get(indexIterator-1).setAlpha(0.5f);
+                          textList.get(indexIterator-1).setTextColor(Color.rgb(255,255,255));
+                      }
+                      System.out.println(indexIterator);
+                      System.out.println("Size of sie list is: " + overlapText.size());
+                      for(int counter = 0; counter < imageList.size(); counter++) {
+                          if(overlapText.contains(textList.get(counter))) {
+                              imageList.get(indexIterator).bringToFront();
+                              imageList.get(indexIterator).setAlpha(1f);
+                              textList.get(indexIterator).bringToFront();
+                              textList.get(indexIterator).setTextColor(Color.rgb(71,74,209));
+                          }
+                      }
+                      indexIterator++;
+                  }
+                  }
+               );
+
+
+
     }
 
     @Override
@@ -289,6 +381,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         new LoadMyElevation().execute();
         spinner.setVisibility(View.GONE);
         new LoadPlaces().execute(radius);
+        shuffleBoxes();
     }
 
     @Override
@@ -556,16 +649,21 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                             double ang = poiAngle(poiLat, poiLon, angle, Integer.parseInt(radius));
 
                             if (inFOV(poiLat, poiLon, angle, Integer.parseInt(radius))){
-                                directionPOIs.add(foundPOIs.get(i) + " " + distance + "m");
-                                addImg(ang, foundPOIs.get(i) + " " + distance + "m", GoogleElevation.elevationList.get(i), referenceNum.get(i));
+                                if (!directionPOIs.contains(foundPOIs.get(i))){
+                                    directionPOIs.add(foundPOIs.get(i) + " " + distance + "m");
+                                    addImg(ang, foundPOIs.get(i) + " " + distance + "m", GoogleElevation.elevationList.get(i), referenceNum.get(i));
+                                }
+
                             }
                         }
 
                         //ListView lv = (ListView) findViewById(R.id.listView);
                         //lv.setAdapter(new ArrayAdapter<String>(MainActivity.this, R.layout.simple_list_item_1, directionPOIs));
+                        //shuffleBoxes();
                     }
                     else if (status.equals("ZERO_RESULTS")){
                         t.setText("No places in radius");
+                        shuffleImg.setVisibility(View.INVISIBLE);
                     }
                     else if (status.equals("OVER_QUERY_LIMIT")){
                         t.setText("OVER_QUERY_LIMIT");

@@ -100,7 +100,6 @@ public class PlaceInfo extends Activity {
                                 String latitude = Double.toString(placeDetails.result.geometry.location.lat);
                                 String longitude = Double.toString(placeDetails.result.geometry.location.lng);
 
-
                                 Log.d("Place ", name + address + phone + latitude + longitude);
 
                                 // Displaying all the details in the view

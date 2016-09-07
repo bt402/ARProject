@@ -29,9 +29,10 @@ public class SettingsActivity extends Activity {
         SeekBar seekBar = (SeekBar) findViewById(R.id.seekBar);
         final EditText radiusText = (EditText) findViewById(R.id.editText2);
         // set seek bar properties
-        seekBar.setProgress(0); // start value
         seekBar.incrementProgressBy(100); // step by 100 meters
         seekBar.setMax(5000);
+        seekBar.setProgress(Integer.parseInt(radiusText.getText().toString())); // start value
+
 
         Bundle state = getIntent().getExtras();
         if (state != null){
