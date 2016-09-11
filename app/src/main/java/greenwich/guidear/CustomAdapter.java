@@ -6,16 +6,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
-/**
- * Created by Marcin on 9/5/2016.
- */
+import java.util.ArrayList;
+
 public class CustomAdapter extends ArrayAdapter {
     Model[] modelItems = null;
     Context context;
+    public ArrayList<ToggleButton> toggleButtonArrayList = new ArrayList<>();
     public CustomAdapter(Context context, Model[] resource) {
         super(context,R.layout.row,resource);
         // TODO Auto-generated constructor stub
@@ -23,17 +23,30 @@ public class CustomAdapter extends ArrayAdapter {
         this.modelItems = resource;
     }
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         // TODO Auto-generated method stub
         LayoutInflater inflater = ((Activity)context).getLayoutInflater();
         convertView = inflater.inflate(R.layout.row, parent, false);
         TextView name = (TextView) convertView.findViewById(R.id.textView1);
         ToggleButton tb = (ToggleButton) convertView.findViewById(R.id.toggleButton1);
+        toggleButtonArrayList.add(tb);
         name.setText(modelItems[position].getName());
+        tb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if (b){
+                    modelItems[position].setValue(1);
+                }
+                else if (!b){
+                    modelItems[position].setValue(0);
+                }
+            }
+        });
         if(modelItems[position].getValue() == 1)
             tb.setChecked(true);
         else
             tb.setChecked(false);
         return convertView;
     }
+
 }
