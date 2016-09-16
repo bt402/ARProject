@@ -123,7 +123,9 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
             System.out.println(npe);
         }
 
-        radius = radiusState;
+        String[] radiusStateString = radiusState.split(" ");
+
+        radius = radiusStateString[0];
         types = typesState;
 
         settingsBtn.setOnClickListener(new View.OnClickListener() {
@@ -347,7 +349,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
                 if (resultCode == Activity.RESULT_OK) {
-                    radius = data.getStringExtra("radius").toString();
+                    radius = radius;
                     types = data.getStringExtra("POI").toString();
                     }
     }
@@ -561,8 +563,11 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
             // See if the phone has got permissions
             try {
                 // Radius in meters - increase this value if you don't find any places
-                // double radius = 1000; // 1000 meters
-                double radius = Double.parseDouble(args[0]);
+                // double radius = 1000; // 1000 meters/yards
+                // double radius = Double.parseDouble(args[0]);
+                String[] radiusString = args[0].split(" ");
+                double radius = Double.parseDouble(radiusString[0]);
+
                 // get nearest places
                 nearPlaces = googlePlaces.search(latitude,
                         longitude, radius, types);

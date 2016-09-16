@@ -1,12 +1,10 @@
 package greenwich.guidear;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
-import android.os.Bundle;
 
 public class SensorDialog extends DialogFragment{
 
