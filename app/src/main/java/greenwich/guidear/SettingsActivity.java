@@ -1,73 +1,163 @@
 package greenwich.guidear;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
+import android.view.ViewGroup;
+import android.widget.AbsListView;
+import android.widget.CompoundButton;
+import android.widget.ListView;
 import android.widget.SeekBar;
-import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
-import org.w3c.dom.Text;
-
-import java.lang.reflect.Field;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
-/**
- * Created by Marcin on 08/08/2016.
- */
+
 public class SettingsActivity extends Activity {
+
+    Model[] modelItems = new Model[16];
+    boolean checked = false;
+
     @Override
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_screen);
-        LoadPreferences();
-        // find the seek bar and change value of the textbox
-        SeekBar seekBar = (SeekBar) findViewById(R.id.seekBar);
-        final EditText radiusText = (EditText) findViewById(R.id.editText2);
-        // set seek bar properties
-        seekBar.incrementProgressBy(100); // step by 100 meters
-        seekBar.setMax(5000);
-        seekBar.setProgress(Integer.parseInt(radiusText.getText().toString())); // start value
+
+        ToggleButton toggleButton = (ToggleButton) findViewById(R.id.mesuramentSwitch);
+        // m = yd/1.0936
+        // yd = m * 1.0936
+        final TextView distanceTxt = (TextView) findViewById(R.id.distanceText);
+        //final double metricDistance = Double.parseDouble(distanceTxt.getText().toString());
+        final ListView listView = (ListView) findViewById(R.id.listView);
+        final ToggleButton everythingToggle = (ToggleButton) findViewById(R.id.EverythingToggle);
+
+        modelItems[0] = new Model("Animals", 0);
+        modelItems[1] = new Model("Accomodation", 1);
+        modelItems[2] = new Model("Food & Drink", 1);
+        modelItems[3] = new Model("Education", 1);
+        modelItems[4] = new Model("Entertainment", 1);
+        modelItems[5] = new Model("Health", 1);
+        modelItems[6] = new Model("Library", 1);
+        modelItems[7] = new Model("Shops", 1);
+        modelItems[8] = new Model("Money", 1);
+        modelItems[9] = new Model("Petrol Station", 1);
+        modelItems[10] = new Model("Police", 1);
+        modelItems[11] = new Model("Post Office", 1);
+        modelItems[12] = new Model("Sport", 1);
+        modelItems[13] = new Model("Underground Station", 1);
+        modelItems[14] = new Model("Tourist Attraction", 1);
+        modelItems[15] = new Model("Transport", 1);
 
 
-        Bundle state = getIntent().getExtras();
-        if (state != null){
-            // defaultPOI
-            String temp = state.get("defaultPOI").toString();
-            String[] arr = temp.split("\\|");
-
-            for (int i = 0; i < arr.length; i++){
-                System.out.println(arr[i]);
-                String switchName = arr[i] + "Switch";
-                int resID = getResources().getIdentifier(switchName, "id", getPackageName());
-                Switch tempSwitch = (Switch) findViewById(resID);
-                //tempSwitch.setChecked(true);
+        final CustomAdapter adapter = new CustomAdapter(this, modelItems) {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                // Get the current item from ListView
+                View view = super.getView(position, convertView, parent);
+                if (position % 2 == 1) {
+                    view.setBackgroundColor(Color.parseColor("#262626"));
+                } else {
+                    view.setBackgroundColor(Color.parseColor("#333333"));
+                }
+                return view;
             }
-        }
+        };
 
-        Button saveBtn = (Button) findViewById(R.id.saveSettingsBtn);
-        saveBtn.setOnClickListener(new View.OnClickListener() {
-                                       @Override
-                                       public void onClick(View view) {
-                                           SavePreferences();
-                                           Intent resultIntent = new Intent();
-                                           resultIntent.putExtra("radius", radiusText.getText().toString());
-                                           final String POIString = PointOfInterestBuilder();
-                                           resultIntent.putExtra("POI", POIString);
-                                           setResult(Activity.RESULT_OK, resultIntent);
-                                           finish();
-                                       }
-                                   }
-        );
+
+        listView.setAdapter(adapter);
+
+
+        SeekBar seekBar = (SeekBar) findViewById(R.id.seekBar2);
+        // set seek bar properties
+        seekBar.incrementProgressBy(100); // step by 100 meters/yards
+        seekBar.setMax(5000);
+        final DecimalFormat df = new DecimalFormat("#.##");
+        LoadPreferences();
+
+        final String[] distance = distanceTxt.getText().toString().split(" ");
+        seekBar.setProgress((int) Double.parseDouble(distance[0])); // start value
+
+        toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton arg0, boolean isChecked) {
+                double metricDistance = Double.parseDouble(distance[0]);
+                double yardDistance = metricDistance * 1.0936;
+                if (isChecked) {
+                    distanceTxt.setText("" + df.format(yardDistance) + " yards");
+                    distance[1] = " yards";
+
+                } else if (!isChecked) {
+                    distanceTxt.setText("" + df.format(metricDistance / 1.0936) + " meters");
+                    distance[1] = " meters";
+                }
+            }
+        });
+
+
+        everythingToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if (b) {
+                    checked = true;
+                    for (int i = 0; i < adapter.toggleButtonArrayList.size(); i++) {
+                        System.out.println(adapter.toggleButtonArrayList.size());
+                        adapter.toggleButtonArrayList.get(i).setChecked(false);
+                        adapter.toggleButtonArrayList.get(i).setEnabled(false);
+                    }
+                } else {
+                    checked = false;
+                    for (int i = 0; i < adapter.toggleButtonArrayList.size(); i++) {
+                        adapter.toggleButtonArrayList.get(i).setEnabled(true);
+                    }
+                }
+
+
+            }
+        });
+
+        listView.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView absListView, int i) {
+                if (checked) {
+                    for (int k = 0; k < adapter.toggleButtonArrayList.size(); k++) {
+                        adapter.toggleButtonArrayList.get(k).setChecked(false);
+                        adapter.toggleButtonArrayList.get(k).setEnabled(false);
+                    }
+                } else {
+                    for (int k = 0; k < adapter.toggleButtonArrayList.size(); k++) {
+                        adapter.toggleButtonArrayList.get(k).setEnabled(true);
+                    }
+                }
+            }
+
+            @Override
+            public void onScroll(AbsListView absListView, int i, int i1, int i2) {
+                System.out.println(checked);
+                if (checked) {
+                    for (int k = 0; k < adapter.toggleButtonArrayList.size(); k++) {
+                        adapter.toggleButtonArrayList.get(k).setChecked(false);
+                        adapter.toggleButtonArrayList.get(k).setEnabled(false);
+                    }
+                } else {
+                    for (int k = 0; k < adapter.toggleButtonArrayList.size(); k++) {
+                        adapter.toggleButtonArrayList.get(k).setEnabled(true);
+                    }
+                }
+            }
+        });
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                radiusText.setText(String.valueOf(progress));
+                distanceTxt.setText(String.valueOf(progress) + " " + distance[1]);
             }
 
             @Override
@@ -83,80 +173,148 @@ public class SettingsActivity extends Activity {
 
     }
 
+    @Override
+    public void onBackPressed() {
+        TextView distanceTxt = (TextView) findViewById(R.id.distanceText);
+        String[] distance = distanceTxt.getText().toString().split(" ");
+        String radiusText = distance[0];
 
-    private void SavePreferences(){
+        if (distance[1].equals("yards")) {
+            radiusText = "" + (int) (Double.parseDouble(distance[0]) / 1.0936);
+        } else if (distance[1].equals("meters")) {
+            radiusText = "" + (int) Double.parseDouble(distance[0]);
+        }
+
+        SavePreferences();
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra("radius", radiusText);
+        final String POIString = PointOfInterestBuilder();
+
+        if (POIString == ""){
+            SettingsDialogError settingsDialogError = new SettingsDialogError();
+            settingsDialogError.emptyList(this);
+        }
+        else {
+
+            resultIntent.putExtra("POI", POIString);
+            setResult(Activity.RESULT_OK, resultIntent);
+
+            super.onBackPressed();
+        }
+    }
+
+    public String PointOfInterestBuilder() {
+        String poiBuilder = "";
+        ArrayList<String> intrestList = new ArrayList<>();
+        SharedPreferences sharedPreferences = getSharedPreferences("SettingsSave", 1);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+
+
+        for (int i = 0; i < modelItems.length; i++) {
+            if (modelItems[i].getValue() == 1) {
+                if (modelItems[i].getName() == "Animals") {
+                    intrestList.add("veterinary_care|zoo");
+                } else if (modelItems[i].getName() == "Accomodation") {
+                    intrestList.add("lodging");
+                } else if (modelItems[i].getName() == "Food & Drink") {
+                    intrestList.add("bakery|bar|café|department_store|furniture_store|grocery_or_supermarket|meal_delivery|meal_takeaway|restaurant");
+                } else if (modelItems[i].getName() == "Education") {
+                    intrestList.add("school|university");
+                } else if (modelItems[i].getName() == "Entertainment") {
+                    intrestList.add("amusement_park|aquarium|bowling_alley|casino|movie_rental|movie_theater|moving_company|night_club");
+                } else if (modelItems[i].getName() == "Health") {
+                    intrestList.add("dentist|doctor|hospital|pharmacy|physiotherapist|spa");
+                } else if (modelItems[i].getName() == "Library") {
+                    intrestList.add("library");
+                } else if (modelItems[i].getName() == "Shops") {
+                    intrestList.add("clothing_store|convenience_store|electronics_store|florist|hardware_store|home_goods_store|jewelry_store|liquor_store|pet_store|shoe_store|shopping_mall|store|grocery_or_supermarket");
+                } else if (modelItems[i].getName() == "Money") {
+                    intrestList.add("accounting|atm|bank");
+                } else if (modelItems[i].getName() == "Petrol Station") {
+                    intrestList.add("gas_station");
+                } else if (modelItems[i].getName() == "Police") {
+                    intrestList.add("police");
+                } else if (modelItems[i].getName() == "Post Office") {
+                    intrestList.add("post_office");
+                } else if (modelItems[i].getName() == "Sport") {
+                    intrestList.add("gym|stadium");
+                } else if (modelItems[i].getName() == "Underground Station") {
+                    intrestList.add("subway_station");
+                } else if (modelItems[i].getName() == "Tourist Attraction") {
+                    intrestList.add("art_gallery|campground|museum|park|rv_park");
+                } else if (modelItems[i].getName() == "Transport") {
+                    intrestList.add("airport|bus_station|parking|taxi_stand|train_station|transit_station");
+                }
+            }
+        }
+
+        ToggleButton everythingToggle = (ToggleButton) findViewById(R.id.EverythingToggle);
+        if (checked){
+            poiBuilder = "null";
+        }
+
+
+        for (int i = 0; i < intrestList.size(); i++) {
+            poiBuilder += intrestList.get(i) + "|";
+        }
+        // remove last pipe
+        if (poiBuilder != null && poiBuilder.length() > 0 && poiBuilder.charAt(poiBuilder.length() - 1) == '|') {
+            poiBuilder = poiBuilder.substring(0, poiBuilder.length() - 1);
+        }
+
+        return poiBuilder;
+    }
+
+    private void SavePreferences() {
         SharedPreferences sharedPreferences = getSharedPreferences("SettingsSave", 1);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         // Radius of the search
-        EditText radiusText = (EditText) findViewById(R.id.editText2);
-        editor.putString("r", radiusText.getText().toString());
+        TextView distanceTxt = (TextView) findViewById(R.id.distanceText);
+        editor.putString("r", distanceTxt.getText().toString());
 
-        // All 18 switches urgh!
-        Switch airportSwitch = (Switch) findViewById(R.id.airportSwitch);
-        editor.putBoolean("airportSwitch", airportSwitch.isChecked());
+        ToggleButton everythingToggle = (ToggleButton) findViewById(R.id.EverythingToggle);
+        editor.putBoolean("everythingTog", everythingToggle.isChecked());
 
-        Switch atmSwitch = (Switch) findViewById(R.id.atmSwitch);
-        editor.putBoolean("atmSwitch", atmSwitch.isChecked());
+        ToggleButton measureToggle = (ToggleButton) findViewById(R.id.mesuramentSwitch);
+        editor.putBoolean("measurementTog", measureToggle.isChecked());
 
-        Switch bankSwitch = (Switch) findViewById(R.id.bankSwitch);
-        editor.putBoolean("bankSwitch", bankSwitch.isChecked());
+        for (int i = 0; i < modelItems.length; i++) {
+            if (modelItems[i].getName() == "Animals") {
+                editor.putInt("AnimalsSwitch", modelItems[i].getValue());
+            } else if (modelItems[i].getName() == "Accomodation") {
+                editor.putInt("AccomodationSwitch", modelItems[i].getValue());
+            } else if (modelItems[i].getName() == "Food & Drink") {
+                editor.putInt("FoodNDrinkSwitch", modelItems[i].getValue());
+            } else if (modelItems[i].getName() == "Education") {
+                editor.putInt("EducationSwitch", modelItems[i].getValue());
+            } else if (modelItems[i].getName() == "Entertainment") {
+                editor.putInt("EntertainmentSwitch", modelItems[i].getValue());
+            } else if (modelItems[i].getName() == "Health") {
+                editor.putInt("HealthSwitch", modelItems[i].getValue());
+            } else if (modelItems[i].getName() == "Library") {
+                editor.putInt("LibrarySwitch", modelItems[i].getValue());
+            } else if (modelItems[i].getName() == "Shops") {
+                editor.putInt("ShopsSwitch", modelItems[i].getValue());
+            } else if (modelItems[i].getName() == "Money") {
+                editor.putInt("MoneySwitch", modelItems[i].getValue());
+            } else if (modelItems[i].getName() == "Petrol Station") {
+                editor.putInt("PetrolSwitch", modelItems[i].getValue());
+            } else if (modelItems[i].getName() == "Police") {
+                editor.putInt("PoliceSwitch", modelItems[i].getValue());
+            } else if (modelItems[i].getName() == "Post Office") {
+                editor.putInt("PostOfficeSwitch", modelItems[i].getValue());
+            } else if (modelItems[i].getName() == "Sport") {
+                editor.putInt("SportSwitch", modelItems[i].getValue());
+            } else if (modelItems[i].getName() == "Underground Station") {
+                editor.putInt("UndergroundSwitch", modelItems[i].getValue());
+            } else if (modelItems[i].getName() == "Tourist Attraction") {
+                editor.putInt("TouristSwitch", modelItems[i].getValue());
+            } else if (modelItems[i].getName() == "Transport") {
+                editor.putInt("TransportSwitch", modelItems[i].getValue());
+            }
 
-        Switch barSwitch = (Switch) findViewById(R.id.barSwitch);
-        editor.putBoolean("barSwitch", barSwitch.isChecked());
+        }
 
-        Switch bus_stationSwitch = (Switch) findViewById(R.id.bus_stationSwitch);
-        editor.putBoolean("bus_stationSwitch", bus_stationSwitch.isChecked());
-
-        Switch cafeSwitch = (Switch) findViewById(R.id.cafeSwitch);
-        editor.putBoolean("cafeSwitch", cafeSwitch.isChecked());
-
-        Switch city_hallSwitch = (Switch) findViewById(R.id.city_hallSwitch);
-        editor.putBoolean("city_hallSwitch", city_hallSwitch.isChecked());
-
-        Switch doctorSwitch = (Switch) findViewById(R.id.doctorSwitch);
-        editor.putBoolean("doctorSwitch", doctorSwitch.isChecked());
-
-        Switch gas_stationSwitch = (Switch) findViewById(R.id.gas_stationSwitch);
-        editor.putBoolean("gas_stationSwitch", gas_stationSwitch.isChecked());
-
-        Switch hospitalSwitch = (Switch) findViewById(R.id.hospitalSwitch);
-        editor.putBoolean("hospitalSwitch", hospitalSwitch.isChecked());
-
-        Switch librarySwitch = (Switch) findViewById(R.id.librarySwitch);
-        editor.putBoolean("librarySwitch", librarySwitch.isChecked());
-
-        Switch liquor_storeSwitch = (Switch) findViewById(R.id.liquor_storeSwitch);
-        editor.putBoolean("liquor_storeSwitch", liquor_storeSwitch.isChecked());
-
-        Switch parkSwitch = (Switch) findViewById(R.id.parkSwitch);
-        editor.putBoolean("parkSwitch", parkSwitch.isChecked());
-
-        Switch schoolSwitch = (Switch) findViewById(R.id.schoolSwitch);
-        editor.putBoolean("schoolSwitch", schoolSwitch.isChecked());
-
-        Switch restaurantSwitch = (Switch) findViewById(R.id.restaurantSwitch);
-        editor.putBoolean("restaurantSwitch", restaurantSwitch.isChecked());
-
-        Switch train_stationSwitch = (Switch) findViewById(R.id.train_stationSwitch);
-        editor.putBoolean("train_stationSwitch", train_stationSwitch.isChecked());
-
-        Switch post_officeSwitch = (Switch) findViewById(R.id.post_officeSwitch);
-        editor.putBoolean("post_officeSwitch", post_officeSwitch.isChecked());
-
-        Switch universitySwitch = (Switch) findViewById(R.id.universitySwitch);
-        editor.putBoolean("universitySwitch", universitySwitch.isChecked());
-
-        Switch grocery_or_supermarketSwitch = (Switch) findViewById(R.id.grocery_or_supermarketSwitch);
-        editor.putBoolean("grocery_or_supermarketSwitch", grocery_or_supermarketSwitch.isChecked());
-
-        Switch lodgingSwitch = (Switch) findViewById(R.id.lodgingSwitch);
-        editor.putBoolean("lodgingSwitch", lodgingSwitch.isChecked());
-
-        Switch everythingSwitch = (Switch) findViewById(R.id.nullSwitch);
-        editor.putBoolean("nullSwitch", everythingSwitch.isChecked());
-
-        Switch electronics_storeStwich = (Switch) findViewById(R.id.electronics_storeSwitch);
-        editor.putBoolean("electronics_storeSwitch", electronics_storeStwich.isChecked());
 
         final String POIString = PointOfInterestBuilder();
         editor.putString("types", POIString);
@@ -164,210 +322,42 @@ public class SettingsActivity extends Activity {
         editor.commit();
     }
 
-    private void LoadPreferences(){
+    private void LoadPreferences() {
         SharedPreferences sharedPreferences = getSharedPreferences("SettingsSave", 1);
-        String radiusState = sharedPreferences.getString("r", "1000");
-        EditText radiusText = (EditText) findViewById(R.id.editText2);
-        radiusText.setText(radiusState);
+        String radiusState = sharedPreferences.getString("r", "1000 meters");
+        TextView distanceTxt = (TextView) findViewById(R.id.distanceText);
+        distanceTxt.setText(radiusState);
+        ToggleButton everythingToggle = (ToggleButton) findViewById(R.id.EverythingToggle);
+        everythingToggle.setChecked(sharedPreferences.getBoolean("everythingTog", true));
+        checked = sharedPreferences.getBoolean("everythingTog", true);
+        ToggleButton measurementToggle = (ToggleButton) findViewById(R.id.mesuramentSwitch);
+        measurementToggle.setChecked(sharedPreferences.getBoolean("measurementTog", true));
 
-        // All 18 switches urgh!
-        Switch airportSwitch = (Switch) findViewById(R.id.airportSwitch);
-        Boolean airportSwitchState = sharedPreferences.getBoolean("airportSwitch", false);
-        airportSwitch.setChecked(airportSwitchState);
-
-        Switch atmSwitch = (Switch) findViewById(R.id.atmSwitch);
-        Boolean atmSwitchState = sharedPreferences.getBoolean("atmSwitch", false);
-        atmSwitch.setChecked(atmSwitchState);
-
-        Switch bankSwitch = (Switch) findViewById(R.id.bankSwitch);
-        Boolean bankSwitchState = sharedPreferences.getBoolean("bankSwitch", false);
-        bankSwitch.setChecked(bankSwitchState);
-
-        Switch barSwitch = (Switch) findViewById(R.id.barSwitch);
-        Boolean barSwitchState = sharedPreferences.getBoolean("barSwitch", false);
-        barSwitch.setChecked(barSwitchState);
-
-        Switch bus_stationSwitch = (Switch) findViewById(R.id.bus_stationSwitch);
-        Boolean bus_stationSwitchState = sharedPreferences.getBoolean("bus_stationSwitch", false);
-        bus_stationSwitch.setChecked(bus_stationSwitchState);
-
-        Switch cafeSwitch = (Switch) findViewById(R.id.cafeSwitch);
-        Boolean cafeSwitchState = sharedPreferences.getBoolean("cafeSwitch", false);
-        cafeSwitch.setChecked(cafeSwitchState);
-
-        Switch city_hallSwitch = (Switch) findViewById(R.id.city_hallSwitch);
-        Boolean city_hallSwitchState = sharedPreferences.getBoolean("city_hallSwitch", false);
-        city_hallSwitch.setChecked(city_hallSwitchState);
-
-        Switch doctorSwitch = (Switch) findViewById(R.id.doctorSwitch);
-        Boolean doctorSwitchState = sharedPreferences.getBoolean("doctorSwitch", false);
-        doctorSwitch.setChecked(doctorSwitchState);
-
-        Switch gas_stationSwitch = (Switch) findViewById(R.id.gas_stationSwitch);
-        Boolean gas_stationSwitchState = sharedPreferences.getBoolean("gas_stationSwitch", false);
-        gas_stationSwitch.setChecked(gas_stationSwitchState);
-
-        Switch hospitalSwitch = (Switch) findViewById(R.id.hospitalSwitch);
-        Boolean hospitalSwitchState = sharedPreferences.getBoolean("hospitalSwitch", false);
-        hospitalSwitch.setChecked(hospitalSwitchState);
-
-        Switch librarySwitch = (Switch) findViewById(R.id.librarySwitch);
-        Boolean librarySwitchState = sharedPreferences.getBoolean("librarySwitch", false);
-        librarySwitch.setChecked(librarySwitchState);
-
-        Switch liquor_storeSwitch = (Switch) findViewById(R.id.liquor_storeSwitch);
-        Boolean liquor_storeSwitchState = sharedPreferences.getBoolean("liquor_storeSwitch", false);
-        liquor_storeSwitch.setChecked(liquor_storeSwitchState);
-
-        Switch parkSwitch = (Switch) findViewById(R.id.parkSwitch);
-        Boolean parkSwitchState = sharedPreferences.getBoolean("parkSwitch", false);
-        parkSwitch.setChecked(parkSwitchState);
-
-        Switch schoolSwitch = (Switch) findViewById(R.id.schoolSwitch);
-        Boolean schoolSwitchState = sharedPreferences.getBoolean("schoolSwitch", false);
-        schoolSwitch.setChecked(schoolSwitchState);
-
-        Switch restaurantSwitch = (Switch) findViewById(R.id.restaurantSwitch);
-        Boolean restaurantSwitchState = sharedPreferences.getBoolean("restaurantSwitch", false);
-        restaurantSwitch.setChecked(restaurantSwitchState);
-
-        Switch train_stationSwitch = (Switch) findViewById(R.id.train_stationSwitch);
-        Boolean train_stationSwitchState = sharedPreferences.getBoolean("train_stationSwitch", false);
-        train_stationSwitch.setChecked(train_stationSwitchState);
-
-        Switch post_officeSwitch = (Switch) findViewById(R.id.post_officeSwitch);
-        Boolean post_officeSwitchState = sharedPreferences.getBoolean("post_officeSwitch", false);
-        post_officeSwitch.setChecked(post_officeSwitchState);
-
-        Switch universitySwitch = (Switch) findViewById(R.id.universitySwitch);
-        Boolean universitySwitchState = sharedPreferences.getBoolean("universitySwitch", false);
-        universitySwitch.setChecked(universitySwitchState);
-
-        Switch grocery_or_supermarketSwitch = (Switch) findViewById(R.id.grocery_or_supermarketSwitch);
-        Boolean grocery_or_supermarketSwitchState = sharedPreferences.getBoolean("grocery_or_supermarketSwitch", false);
-        grocery_or_supermarketSwitch.setChecked(grocery_or_supermarketSwitchState);
-
-        Switch lodgingSwitch = (Switch) findViewById(R.id.lodgingSwitch);
-        Boolean lodgingSwitchState = sharedPreferences.getBoolean("lodgingSwitch", false);
-        lodgingSwitch.setChecked(lodgingSwitchState);
-
-        Switch nullSwitch = (Switch) findViewById(R.id.nullSwitch);
-        Boolean nullSwitchState = sharedPreferences.getBoolean("nullSwitch", false);
-        nullSwitch.setChecked(nullSwitchState);
-
-        Switch electronics_storeSwitch = (Switch) findViewById(R.id.electronics_storeSwitch);
-        Boolean electronics_storeState = sharedPreferences.getBoolean("electronics_storeSwitch", false);
-        electronics_storeSwitch.setChecked(electronics_storeState);
-
-    }
-
-    public String PointOfInterestBuilder(){
-        String poiBuilder = "";
-        ArrayList<String> intrestList = new ArrayList<>();
-        SharedPreferences sharedPreferences = getSharedPreferences("SettingsSave", 1);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-
-        // All 18 switches urgh!
-        Switch airportSwitch = (Switch) findViewById(R.id.airportSwitch);
-        Switch atmSwitch = (Switch) findViewById(R.id.atmSwitch);
-        Switch bankSwitch = (Switch) findViewById(R.id.bankSwitch);
-        Switch barSwitch = (Switch) findViewById(R.id.barSwitch);
-        Switch bus_stationSwitch = (Switch) findViewById(R.id.bus_stationSwitch);
-        Switch cafeSwitch = (Switch) findViewById(R.id.cafeSwitch);
-        Switch city_hallSwitch = (Switch) findViewById(R.id.city_hallSwitch);
-        Switch doctorSwitch = (Switch) findViewById(R.id.doctorSwitch);
-        Switch gas_stationSwitch = (Switch) findViewById(R.id.gas_stationSwitch);
-        Switch hospitalSwitch = (Switch) findViewById(R.id.hospitalSwitch);
-        Switch librarySwitch = (Switch) findViewById(R.id.librarySwitch);
-        Switch liquor_storeSwitch = (Switch) findViewById(R.id.liquor_storeSwitch);
-        Switch parkSwitch = (Switch) findViewById(R.id.parkSwitch);
-        Switch schoolSwitch = (Switch) findViewById(R.id.schoolSwitch);
-        Switch restaurantSwitch = (Switch) findViewById(R.id.restaurantSwitch);
-        Switch train_stationSwitch = (Switch) findViewById(R.id.train_stationSwitch);
-        Switch post_officeSwitch = (Switch) findViewById(R.id.post_officeSwitch);
-        Switch universitySwitch = (Switch) findViewById(R.id.universitySwitch);
-        Switch grocery_or_supermarketSwitch = (Switch) findViewById(R.id.grocery_or_supermarketSwitch);
-        Switch lodgingSwitch = (Switch) findViewById(R.id.lodgingSwitch);
-        Switch nullSwitch = (Switch) findViewById(R.id.nullSwitch);
-        Switch electronics_storeSwitch = (Switch) findViewById(R.id.electronics_storeSwitch);
-
-        if (airportSwitch.isChecked()){
-            intrestList.add("airport");
-        }
-        if (atmSwitch.isChecked()){
-            intrestList.add("atm");
-        }
-        if (bankSwitch.isChecked()){
-            intrestList.add("bank");
-        }
-        if (barSwitch.isChecked()){
-            intrestList.add("bar");
-        }
-        if(bus_stationSwitch.isChecked()){
-            intrestList.add("bus_station");
-        }
-        if (cafeSwitch.isChecked()){
-            intrestList.add("cafe");
-        }
-        if(city_hallSwitch.isChecked()){
-            intrestList.add("city_hall");
-        }
-        if (doctorSwitch.isChecked()){
-            intrestList.add("doctor");
-        }
-        if (gas_stationSwitch.isChecked()){
-            intrestList.add("gas_station");
-        }
-        if (hospitalSwitch.isChecked()){
-            intrestList.add("hospital");
-        }
-        if (librarySwitch.isChecked()){
-            intrestList.add("library");
-        }
-        if (liquor_storeSwitch.isChecked()){
-            intrestList.add("liquor_store");
-        }
-        if (parkSwitch.isChecked()){
-            intrestList.add("park");
-        }
-        if(schoolSwitch.isChecked()){
-            intrestList.add("school");
-        }
-        if (restaurantSwitch.isChecked()){
-            intrestList.add("restaurant");
-        }
-        if (train_stationSwitch.isChecked()){
-            intrestList.add("train_station");
-        }
-        if(post_officeSwitch.isChecked()){
-            intrestList.add("post_office");
-        }
-        if (universitySwitch.isChecked()){
-            intrestList.add("university");
-        }
-        if (grocery_or_supermarketSwitch.isChecked()){
-            intrestList.add("grocery_or_supermarket");
-        }
-        if (lodgingSwitch.isChecked()){
-            intrestList.add("lodging");
-        }
-        if (nullSwitch.isChecked()){
-            intrestList = new ArrayList<>();
-            intrestList.add("null");
-        }
-        if (electronics_storeSwitch.isChecked()){
-            intrestList.add("electronics_store");
+        if (measurementToggle.isChecked()) {
+            String[] distance = radiusState.split(" ");
+            distanceTxt.setText(distance[0] + " yards");
+        } else {
+            String[] distance = radiusState.split(" ");
+            distanceTxt.setText(distance[0] + " meters");
         }
 
-        for (int i = 0; i < intrestList.size(); i++){
-            poiBuilder += intrestList.get(i) + "|";
-        }
-        // remove last pipe
-        if (poiBuilder != null && poiBuilder.length() > 0 && poiBuilder.charAt(poiBuilder.length()-1)=='|') {
-            poiBuilder = poiBuilder.substring(0, poiBuilder.length()-1);
-        }
+        modelItems[0] = new Model("Animals", sharedPreferences.getInt("AnimalsSwitch", 0));
+        modelItems[1] = new Model("Accomodation", sharedPreferences.getInt("AccomodationSwitch", 0));
+        modelItems[2] = new Model("Food & Drink", sharedPreferences.getInt("FoodNDrinkSwitch", 0));
+        modelItems[3] = new Model("Education", sharedPreferences.getInt("EducationSwitch", 0));
+        modelItems[4] = new Model("Entertainment", sharedPreferences.getInt("EntertainmentSwitch", 0));
+        modelItems[5] = new Model("Health", sharedPreferences.getInt("HealthSwitch", 0));
+        modelItems[6] = new Model("Library", sharedPreferences.getInt("LibrarySwitch", 0));
+        modelItems[7] = new Model("Shops", sharedPreferences.getInt("ShopsSwitch", 0));
+        modelItems[8] = new Model("Money", sharedPreferences.getInt("MoneySwitch", 0));
+        modelItems[9] = new Model("Petrol Station", sharedPreferences.getInt("PetrolSwitch", 0));
+        modelItems[10] = new Model("Police", sharedPreferences.getInt("PoliceSwitch", 0));
+        modelItems[11] = new Model("Post Office", sharedPreferences.getInt("PostOfficeSwitch", 0));
+        modelItems[12] = new Model("Sport", sharedPreferences.getInt("SportSwitch", 0));
+        modelItems[13] = new Model("Underground Station", sharedPreferences.getInt("UndergroundSwitch", 0));
+        modelItems[14] = new Model("Tourist Attraction", sharedPreferences.getInt("TouristSwitch", 0));
+        modelItems[15] = new Model("Transport", sharedPreferences.getInt("TransportSwitch", 0));
 
-        return poiBuilder;
     }
 
 }

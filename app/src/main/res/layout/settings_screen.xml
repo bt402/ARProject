@@ -1,233 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
-<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent"
     android:background="#262626"
-    android:columnCount="3"
-    android:rowCount="10">
+    android:layout_height="match_parent">
 
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="airport"
-        android:id="@+id/airportSwitch"
-        android:textColor="#ffffff"
-        android:layout_row="0"
-        android:layout_column="0" />
 
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="atm"
-        android:id="@+id/atmSwitch"
-        android:textColor="#ffffff"
-        android:layout_row="0"
-        android:layout_column="1" />
+    <ToggleButton
+        android:id="@+id/mesuramentSwitch"
+        android:layout_width="320dp"
+        android:layout_height="42dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/metric_imperial"
+        android:layout_gravity="center"
+        android:text=""
+        android:textOff=""
+        android:textOn="" />
 
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="bank"
-        android:id="@+id/bankSwitch"
-        android:textColor="#ffffff"
-        android:layout_row="0"
-        android:layout_column="2" />
+    <LinearLayout android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:orientation="horizontal"
+        android:layout_gravity="center_horizontal">
 
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="bar"
-        android:id="@+id/barSwitch"
-        android:textColor="#ffffff"
-        android:layout_row="1"
-        android:layout_column="0" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textSize="17sp"
+            android:text="5000 meters"
+            android:gravity="center"
+            android:textColor="#ffffff"
+            android:id="@+id/distanceText" />
 
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="bus_station"
-        android:id="@+id/bus_stationSwitch"
-        android:textColor="#ffffff"
-        android:layout_row="1"
-        android:layout_column="1" />
-
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="cafe"
-        android:id="@+id/cafeSwitch"
-        android:textColor="#ffffff"
-        android:layout_row="1"
-        android:layout_column="2" />
-
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="city_hall"
-        android:id="@+id/city_hallSwitch"
-        android:textColor="#ffffff"
-        android:layout_row="2"
-        android:layout_column="0" />
-
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="doctor"
-        android:id="@+id/doctorSwitch"
-        android:textColor="#ffffff"
-        android:layout_row="2"
-        android:layout_column="1" />
-
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="gas_station"
-        android:id="@+id/gas_stationSwitch"
-        android:textColor="#ffffff"
-        android:layout_row="2"
-        android:layout_column="2" />
-
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="hospital"
-        android:id="@+id/hospitalSwitch"
-        android:textColor="#ffffff"
-        android:layout_row="3"
-        android:layout_column="0" />
-
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="library"
-        android:id="@+id/librarySwitch"
-        android:textColor="#ffffff"
-        android:layout_row="3"
-        android:layout_column="1" />
-
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="liquor_store"
-        android:id="@+id/liquor_storeSwitch"
-        android:textColor="#ffffff"
-        android:layout_row="3"
-        android:layout_column="2" />
-
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="park"
-        android:id="@+id/parkSwitch"
-        android:textColor="#ffffff"
-        android:layout_row="4"
-        android:layout_column="0" />
-
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="school"
-        android:id="@+id/schoolSwitch"
-        android:textColor="#ffffff"
-        android:layout_row="4"
-        android:layout_column="1" />
-
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="restaurant"
-        android:id="@+id/restaurantSwitch"
-        android:textColor="#ffffff"
-        android:layout_row="4"
-        android:layout_column="2" />
-
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="train_station"
-        android:id="@+id/train_stationSwitch"
-        android:textColor="#ffffff"
-        android:layout_row="5"
-        android:layout_column="0" />
-
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="post_office"
-        android:id="@+id/post_officeSwitch"
-        android:textColor="#ffffff"
-        android:layout_row="5"
-        android:layout_column="1" />
-
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="university"
-        android:id="@+id/universitySwitch"
-        android:textColor="#ffffff"
-        android:layout_row="5"
-        android:layout_column="2" />
-
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="shop"
-        android:id="@+id/grocery_or_supermarketSwitch"
-        android:textColor="#ffffff"
-        android:layout_row="6"
-        android:layout_column="0" />
-
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="hotels"
-        android:id="@+id/lodgingSwitch"
-        android:textColor="#ffffff"
-        android:layout_row="6"
-        android:layout_column="1" />
-
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="everything"
-        android:id="@+id/nullSwitch"
-        android:textColor="#ffffff"
-        android:layout_row="6"
-        android:layout_column="2" />
-
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="ComShop"
-        android:id="@+id/electronics_storeSwitch"
-        android:textColor="#ffffff"
-        android:layout_row="7"
-        android:layout_column="0" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/editText2"
-        android:text="1000"
-        android:background="#ffffff"
-        android:layout_row="7"
-        android:layout_column="1" />
+    </LinearLayout>
 
     <SeekBar
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/seekBar"
-        android:layout_row="8"
-        android:layout_column="0"
-        android:layout_columnSpan="3"/>
+        android:id="@+id/seekBar2" />
 
-    <Button
-        android:layout_width="wrap_content"
+    <LinearLayout android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:orientation="horizontal"
+        android:layout_gravity="center_horizontal"
+        android:background="#262626">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textSize="15sp"
+            android:text="POI Categories"
+            android:gravity="center"
+            android:textColor="#666565"
+            android:id="@+id/textView3" />
+
+    </LinearLayout>
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:id="@+id/EverythingTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="10dp"
+            android:textColor="#ffffff"
+            android:text="Everything" />
+        <ToggleButton
+            android:id="@+id/EverythingToggle"
+            android:layout_width="50dp"
+            android:layout_height="30dp"
+            android:background="@drawable/toggle_selector"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="10dp"
+            android:text=""
+            android:textOff=""
+            android:textOn="" />
+    </RelativeLayout>
+
+
+    <ListView
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Save"
-        android:id="@+id/saveSettingsBtn"
-        android:layout_row="9"
-        android:layout_column="1"
-        android:clickable="true" />
+        android:id="@+id/listView" />
 
-</GridLayout>
+
+</LinearLayout>

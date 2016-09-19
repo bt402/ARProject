@@ -67,7 +67,10 @@ public class GooglePlaces {
             Log.d("Places Status", "" + list.status);
             if (list.results != null){
                 for (Place p : list.results) {
-                    String strLoc = p.geometry.location.lat + " " + p.geometry.location.lng;
+                    //String strLoc = p.geometry.location.lat + " " + p.geometry.location.lng;
+                    String lat = String.format("%.18f", p.geometry.location.lat);
+                    String lng = String.format("%.18f", p.geometry.location.lng);
+                    String strLoc = lat + " " + lng;
                     foundLoc.add(strLoc);
                 }
             }

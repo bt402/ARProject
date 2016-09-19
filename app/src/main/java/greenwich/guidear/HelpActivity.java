@@ -14,19 +14,29 @@ public class HelpActivity extends Activity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.help_screen);
 
+        ImageView helpImg = (ImageView) findViewById(R.id.questionMark);
+        helpImg.setImageResource(android.R.drawable.ic_menu_help);
+
+        Uri gifUrl = Uri.parse("file:///android_res/drawable/compass.gif");
         WebView gif = (WebView) findViewById(R.id.myGif);
-        gif.loadUrl("https://lh6.ggpht.com/GpGN0C9tz-jRGgPuOSMYopCnvirP-T79W1gg1eW8pbObWBM8GGVjbSxIY3uWTVCCdSA=w300");
+        gif.loadUrl(gifUrl.toString());
 
         TextView helpText = (TextView) findViewById(R.id.helpTxt);
-
-        helpText.setText("If you're compass is not updating please try the following: \n" +
-                         "\u2022 shake the device around\n" +
-                         "\u2022 move the device like an eight\n" +
-                         "\u2022 tap on the devices back\n" +
-                         "Alternatively:\n" +
-                         "1. Tilt your phone forward and back\n" +
-                         "2. Move it side to side\n" +
-                         "3. And then tilt left and right");
-
+/*
+        helpText.setText("\tIf your compass is not updating please try \n" +
+                         "\tthe following: \n" +
+                         "\t \t \u2022 shake the device around\n" +
+                         "\t \t \u2022 move the device like an eight\n" +
+                         "\t \t \u2022 tap on the devices back\n" +
+                         "\t Alternatively:\n" +
+                         "\t \t \u2022 Tilt your phone forward and back\n" +
+                         "\t \t \u2022 Move it side to side\n" +
+                         "\t \t \u2022 And then tilt left and right");
+*/
+        helpText.setText("\n\tIf your compass is not updating please try \n" +
+                         "\tthe following: \n" +
+                         "\t \t \u2022 Tilt your device forwards and backwards\n" +
+                         "\t \t \u2022 Move your device from side to side\n" +
+                         "\t \t \u2022 Tilt your device left to right \n \n");
     }
 }

@@ -17,7 +17,7 @@ public class SettingsDialogError extends DialogFragment {
                         public void onClick(DialogInterface dialog, int which) {
                         }
                     })
-                    .setIcon(android.R.drawable.presence_offline)
+                    .setIcon(android.R.drawable.ic_delete)
                     .setCancelable(false)
                     .show();
         }

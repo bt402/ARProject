@@ -25,7 +25,6 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
@@ -108,7 +107,6 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         helpBtn.setX(width - 192);
         final Intent settingsScreen = new Intent(this, SettingsActivity.class);
         final Intent helpScreen = new Intent(this, HelpActivity.class);
-        final Intent newSettingsScreen = new Intent(this, NewSettingsActivity.class);
 
         SharedPreferences sharedPreferences = null;
         String radiusState = "1000";
@@ -132,8 +130,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                                      @Override
                                      public void onClick(View view) {
                                             settingsScreen.putExtra("defaultPOI", types);
-                                            //startActivityForResult(settingsScreen, 1);
-                                            startActivityForResult(newSettingsScreen, 1);
+                                            startActivityForResult(settingsScreen, 1);
                                      }
                                  }
         );
