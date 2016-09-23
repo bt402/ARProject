@@ -1,4 +1,4 @@
-package greenwich.guidear;
+package greenwich.pointr;
 
 import android.content.Context;
 import android.content.res.Configuration;
@@ -8,9 +8,6 @@ import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.hardware.Camera;
-import android.widget.TextView;
-
-import java.security.Policy;
 
 public class CapturePreview extends SurfaceView implements SurfaceHolder.Callback{
 

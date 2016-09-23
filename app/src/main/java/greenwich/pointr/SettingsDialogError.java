@@ -1,10 +1,9 @@
-package greenwich.guidear;
+package greenwich.pointr;
 
 import android.app.AlertDialog;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.pm.PackageManager;
 
 public class SettingsDialogError extends DialogFragment {
 

@@ -1,8 +1,6 @@
-package greenwich.guidear;
+package greenwich.pointr;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -18,6 +16,7 @@ import android.widget.ToggleButton;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Map;
 
 
 public class SettingsActivity extends Activity {
@@ -188,14 +187,31 @@ public class SettingsActivity extends Activity {
         SavePreferences();
         Intent resultIntent = new Intent();
         resultIntent.putExtra("radius", radiusText);
-        final String POIString = PointOfInterestBuilder();
+        String POIString = PointOfInterestBuilder();
+
+        SharedPreferences sharedPreferences = getSharedPreferences("RefineSettings", 2);
+
 
         if (POIString == ""){
             SettingsDialogError settingsDialogError = new SettingsDialogError();
             settingsDialogError.emptyList(this);
         }
         else {
+            Map<String,?> keys = sharedPreferences.getAll();
 
+            String poiBuilder = "";
+            for(Map.Entry<String,?> entry : keys.entrySet()){
+                //Log.d("map values", entry.getValue().toString());
+                if (!entry.getKey().toString().contains("Checked")){
+                    poiBuilder += entry.getValue().toString()+"|";
+                }
+            }
+            // remove last pipe
+            if (poiBuilder != null && poiBuilder.length() > 0 && poiBuilder.charAt(poiBuilder.length() - 1) == '|') {
+                poiBuilder = poiBuilder.substring(0, poiBuilder.length() - 1);
+            }
+
+            POIString = poiBuilder;
             resultIntent.putExtra("POI", POIString);
             setResult(Activity.RESULT_OK, resultIntent);
 

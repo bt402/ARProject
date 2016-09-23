@@ -6,11 +6,11 @@ android {
     useLibrary 'org.apache.http.legacy'
 
     defaultConfig {
-        applicationId "greenwich.guidear"
+        applicationId "greenwich.pointr"
         minSdkVersion 16
         targetSdkVersion 24
         versionCode 1
-        versionName "0.3.4"
+        versionName "0.7.4"
         multiDexEnabled true
     }
     buildTypes {

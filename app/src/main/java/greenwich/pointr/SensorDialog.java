@@ -1,4 +1,4 @@
-package greenwich.guidear;
+package greenwich.pointr;
 
 import android.app.AlertDialog;
 import android.app.DialogFragment;

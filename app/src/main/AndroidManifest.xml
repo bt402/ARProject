@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="greenwich.guidear">
+    package="greenwich.pointr">
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -12,14 +12,14 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:label="PointR"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="android:icon">
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDso6HCyfGZOnfdkD2AgrtGcHKdMKbdd64"/>
-        <activity android:windowSoftInputMode="adjustPan" android:name=".MainActivity">
+        <activity android:windowSoftInputMode="adjustPan" android:name="greenwich.pointr.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -27,13 +27,11 @@
             </intent-filter>
 
         </activity>
-        <activity android:windowSoftInputMode="adjustPan" android:name="greenwich.guidear.SettingsActivity">
+        <activity android:windowSoftInputMode="adjustPan" android:name="greenwich.pointr.SettingsActivity">
         </activity>
-        <activity android:windowSoftInputMode="adjustPan" android:name="greenwich.guidear.HelpActivity">
+        <activity android:windowSoftInputMode="adjustPan" android:name="greenwich.pointr.HelpActivity">
         </activity>
-        <activity android:windowSoftInputMode="adjustPan" android:name="greenwich.guidear.PlaceInfo">
-        </activity>
-        <activity android:windowSoftInputMode="adjustPan" android:name="greenwich.guidear.NewSettingsActivity">
+        <activity android:windowSoftInputMode="adjustPan" android:name="greenwich.pointr.PlaceInfo">
         </activity>
 
 

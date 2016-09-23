@@ -1,9 +1,8 @@
-package greenwich.guidear;
+package greenwich.pointr;
 
 import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -31,16 +30,7 @@ public class CustomAdapter extends ArrayAdapter {
         TextView name = (TextView) convertView.findViewById(R.id.textView1);
         name.setText(modelItems[position].getName());
 
-        name.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                OptionDialog optionDialog = new OptionDialog();
-                optionDialog.showOption(context, (modelItems[position].getName()));
-            }
-        });
-
-
-        ToggleButton tb = (ToggleButton) convertView.findViewById(R.id.toggleButton1);
+        final ToggleButton tb = (ToggleButton) convertView.findViewById(R.id.toggleButton1);
         toggleButtonArrayList.add(tb);
         tb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -57,6 +47,15 @@ public class CustomAdapter extends ArrayAdapter {
             tb.setChecked(true);
         else
             tb.setChecked(false);
+
+        name.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                OptionDialog optionDialog = new OptionDialog();
+                optionDialog.showOption(context, (modelItems[position].getName()), tb, tb.isChecked());
+            }
+        });
+
         return convertView;
     }
 

@@ -1,4 +1,4 @@
-package greenwich.guidear;
+package greenwich.pointr;
 
 import android.app.Activity;
 import android.net.Uri;

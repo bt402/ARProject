@@ -1,4 +1,4 @@
-package greenwich.guidear;
+package greenwich.pointr;
 
 import android.app.Activity;
 import android.content.Context;
@@ -16,8 +16,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.os.Bundle;
 import android.view.Display;
@@ -31,7 +29,6 @@ import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
-import com.google.android.gms.location.LocationRequest;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

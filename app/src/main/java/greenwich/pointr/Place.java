@@ -1,4 +1,4 @@
-package greenwich.guidear;
+package greenwich.pointr;
 
 import java.io.Serializable;
 

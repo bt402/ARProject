@@ -1,6 +1,5 @@
-package greenwich.guidear;
+package greenwich.pointr;
 
-import android.os.AsyncTask;
 import android.util.Log;
 
 import com.google.api.client.googleapis.GoogleHeaders;
@@ -15,7 +14,6 @@ import com.google.api.client.http.json.JsonHttpParser;
 import com.google.api.client.json.jackson.JacksonFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class GooglePlaces {
 

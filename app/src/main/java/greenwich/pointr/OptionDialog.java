@@ -1,4 +1,4 @@
-package greenwich.guidear;
+package greenwich.pointr;
 
 
 import android.app.AlertDialog;
@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.util.Log;
+import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,14 +18,14 @@ public class OptionDialog extends DialogFragment{
     String[] typesList = {"Place1", "Test", "Beer that way", "Pub", "Roman Bürki", "Swiss football"};
     ArrayList<Integer> mSelectedItems;
     String[] typeSelected;
-    public void showOption(final Context context, final String name){
+    public void showOption(final Context context, final String name, final ToggleButton toggleButton, boolean isChecked){
         mSelectedItems = new ArrayList();  // Where we track the selected items
         typesList = getType(name);
-        if (savedSelected(name, context, typesList.length) != null){
+        if (savedSelected(name, context, typesList.length) != null && isChecked){
             mSelectedItems = savedSelected(name, context, typesList.length);
         }
         else {
-            mSelectedItems = defaultValues(typesList.length);
+            mSelectedItems = defaultValues(typesList.length, isChecked);
         }
         boolean[] checkBoxes = new boolean[typesList.length];
         checkBoxes = selectBoxes(mSelectedItems, typesList.length);
@@ -60,6 +61,12 @@ public class OptionDialog extends DialogFragment{
                             typeSelected[i] = typesList[mSelectedItems.get(i)];
                         }
                         SavePreferences(context, typeSelected, name, boolSelected);
+                        if (mSelectedItems.size() > 0){
+                            toggleButton.setChecked(true);
+                        }
+                        else {
+                            toggleButton.setChecked(false);
+                        }
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -109,14 +116,8 @@ public class OptionDialog extends DialogFragment{
         }
 
     public void SavePreferences(Context context, String[] typesList, String name, int[] checked){
-        SharedPreferences sharedPreferences = context.getSharedPreferences("RefineSettings", 1);
+        SharedPreferences sharedPreferences = context.getSharedPreferences("RefineSettings", 2);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-
-        Map<String,?> keys = sharedPreferences.getAll();
-
-        for(Map.Entry<String,?> entry : keys.entrySet()){
-            Log.d("map values", entry.getValue().toString());
-        }
 
         String checkedStr = "";
         for (int i = 0; i < checked.length; i++){
@@ -314,6 +315,8 @@ public class OptionDialog extends DialogFragment{
         }
         editor.commit();
 
+
+
     }
 
 
@@ -326,7 +329,7 @@ public class OptionDialog extends DialogFragment{
     }
 
     public ArrayList<Integer> savedSelected(String name, Context context, int length){
-        SharedPreferences sharedPreferences = context.getSharedPreferences("RefineSettings", 1);
+        SharedPreferences sharedPreferences = context.getSharedPreferences("RefineSettings", 2);
         ArrayList<Integer> savedNum = new ArrayList<>();
         String defaultStr = "";
         for (int i = 0; i < length; i++){
@@ -354,10 +357,12 @@ public class OptionDialog extends DialogFragment{
         return savedNum;
     }
 
-    public ArrayList<Integer> defaultValues(int length){
+    public ArrayList<Integer> defaultValues(int length, boolean isChecked){
         ArrayList<Integer> def = new ArrayList<>();
-        for (int i = 0; i < length; i++){
-            def.add(i);
+        if (isChecked) {
+            for (int i = 0; i < length; i++) {
+                def.add(i);
+            }
         }
         return  def;
     }

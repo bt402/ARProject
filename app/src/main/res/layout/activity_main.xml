@@ -4,17 +4,17 @@
     android:id="@+id/myRelativeLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="greenwich.guidear.MainActivity">
+    tools:context="greenwich.pointr.MainActivity">
 
     <FrameLayout
         android:id="@+id/mySurfaceView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
 
-        <greenwich.guidear.CapturePreview
+        <greenwich.pointr.CapturePreview
             android:layout_width="fill_parent"
             android:layout_height="wrap_content">
-        </greenwich.guidear.CapturePreview>
+        </greenwich.pointr.CapturePreview>
 
     </FrameLayout>
 

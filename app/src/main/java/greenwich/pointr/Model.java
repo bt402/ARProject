@@ -1,4 +1,4 @@
-package greenwich.guidear;
+package greenwich.pointr;
 
 public class Model{
     String name;
