@@ -248,7 +248,6 @@ public class SettingsActivity extends Activity {
             }
         }
 
-        ToggleButton everythingToggle = (ToggleButton) findViewById(R.id.EverythingToggle);
         if (checked){
             poiBuilder = "null";
         }

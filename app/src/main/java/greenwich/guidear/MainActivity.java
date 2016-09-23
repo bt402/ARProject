@@ -11,10 +11,13 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.os.Bundle;
 import android.view.Display;
@@ -28,6 +31,7 @@ import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
+import com.google.android.gms.location.LocationRequest;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -360,14 +364,21 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         spinner = (ProgressBar)findViewById(R.id.progressBar);
         // See if the phone has got permissions
+        Criteria criteria = new Criteria();
+        criteria.setPowerRequirement(Criteria.POWER_HIGH);
+        criteria.setAccuracy(Criteria.ACCURACY_COARSE);
+        criteria.setSpeedRequired(true);
+
+        String BestAvaliableSignalType = lm.getBestProvider(criteria, false);
         try{
             spinner.setVisibility(View.VISIBLE);
-            location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            location = lm.getLastKnownLocation(BestAvaliableSignalType);
             longitude = location.getLongitude();
             latitude = location.getLatitude();
         }
         catch (SecurityException e){
-
+            longitude = 0.0;
+            latitude = 0.0;
         }
         // calling background Async task to load Google Places
         // After getting places from Google all the data is shown in listview
@@ -400,11 +411,13 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         // Acceleromteter and Mangetometer Listener
         mSensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
         mSensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_GAME);
-        try{
-            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 1, this);
+
+        try {
+            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 1, this);
+            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 1, this);
+            mLocationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 5000, 1, this);
         }
-        catch (SecurityException e){
-        }
+        catch (SecurityException se){}
     }
 
     @Override
@@ -550,12 +563,20 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
             double latitude = 0.0;
             // See if the phone has got permissions
             Location location;
+            Criteria criteria = new Criteria();
+            criteria.setPowerRequirement(Criteria.POWER_HIGH);
+            criteria.setAccuracy(Criteria.ACCURACY_COARSE);
+            criteria.setSpeedRequired(true);
+
+            String BestAvaliableSignalType = lm.getBestProvider(criteria, false);
             try{
-                location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                location = lm.getLastKnownLocation(BestAvaliableSignalType);
                 longitude = location.getLongitude();
                 latitude = location.getLatitude();
             }
             catch (SecurityException e){
+                longitude = 0.0;
+                latitude = 0.0;
             }
             // See if the phone has got permissions
             try {

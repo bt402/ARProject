@@ -76,8 +76,8 @@ public class GoogleElevation {
         for (int i = 0; i < positions.size(); i++){
             // dis[0] = lat, dis[1] = long
             String[] dis = positions.get(i).split(" ");
-            double poiLat = Double.parseDouble(dis[0]);
-            double poiLon = Double.parseDouble(dis[1]);
+            String poiLat = dis[0];
+            String poiLon = dis[1];
             coordinatesBuilder += poiLat + "," + poiLon + "|";
         }
 

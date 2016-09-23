@@ -6,27 +6,35 @@ import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
 
 public class OptionDialog extends DialogFragment{
     String[] typesList = {"Place1", "Test", "Beer that way", "Pub", "Roman Bürki", "Swiss football"};
     ArrayList<Integer> mSelectedItems;
-    public void showOption(final Context context, String name){
+    String[] typeSelected;
+    public void showOption(final Context context, final String name){
         mSelectedItems = new ArrayList();  // Where we track the selected items
         typesList = getType(name);
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        boolean[] test = {true, true};
-        for (int i = 0; i < test.length; i++){
-            if (test[i]){
-                mSelectedItems.add(i);
-            }
+        if (savedSelected(name, context, typesList.length) != null){
+            mSelectedItems = savedSelected(name, context, typesList.length);
         }
+        else {
+            mSelectedItems = defaultValues(typesList.length);
+        }
+        boolean[] checkBoxes = new boolean[typesList.length];
+        checkBoxes = selectBoxes(mSelectedItems, typesList.length);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        //boolean[] test = {true, true};
         // Set the dialog title
         builder.setTitle("Refine your search")
                 // Specify the list array, the items to be selected by default (null for none),
                 // and the listener through which to receive callbacks when items are selected
-                .setMultiChoiceItems(typesList, test,
+                .setMultiChoiceItems(typesList, checkBoxes,
                         new DialogInterface.OnMultiChoiceClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which,
@@ -44,14 +52,14 @@ public class OptionDialog extends DialogFragment{
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
-                        String[] selectedType = new String[mSelectedItems.size()+1];
+                        int[] boolSelected = new int[mSelectedItems.size()];
+                        typeSelected = new String[mSelectedItems.size()];
                         for (int i = 0; i < mSelectedItems.size(); i++){
                             System.out.println(typesList[mSelectedItems.get(i)] + " " + mSelectedItems.get(i));
-                            selectedType[i] = typesList[mSelectedItems.get(i)];
+                            boolSelected[i] = mSelectedItems.get(i);
+                            typeSelected[i] = typesList[mSelectedItems.get(i)];
                         }
-                        SavePreferences(context, selectedType);
-                        // User clicked OK, so save the mSelectedItems results somewhere
-                        // or return them to the component that opened the dialog
+                        SavePreferences(context, typeSelected, name, boolSelected);
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -100,9 +108,21 @@ public class OptionDialog extends DialogFragment{
         return typesList;
         }
 
-    public void SavePreferences(Context context, String[] typesList){
+    public void SavePreferences(Context context, String[] typesList, String name, int[] checked){
         SharedPreferences sharedPreferences = context.getSharedPreferences("RefineSettings", 1);
         SharedPreferences.Editor editor = sharedPreferences.edit();
+
+        Map<String,?> keys = sharedPreferences.getAll();
+
+        for(Map.Entry<String,?> entry : keys.entrySet()){
+            Log.d("map values", entry.getValue().toString());
+        }
+
+        String checkedStr = "";
+        for (int i = 0; i < checked.length; i++){
+            checkedStr += checked[i] + " ";
+        }
+        editor.putString(name+"Checked", checkedStr);
 
         for (int i = 0; i < typesList.length; i++){
             if (typesList[i] == "Veterinary care"){
@@ -296,7 +316,49 @@ public class OptionDialog extends DialogFragment{
 
     }
 
-    public void LoadPreferences(String name, Context context){
 
+    public boolean[] selectBoxes(ArrayList<Integer> n, int length){
+        boolean[] checked = new boolean[length];
+        for (int i = 0; i < n.size(); i++){
+                checked[n.get(i)] = true;
+        }
+        return checked;
+    }
+
+    public ArrayList<Integer> savedSelected(String name, Context context, int length){
+        SharedPreferences sharedPreferences = context.getSharedPreferences("RefineSettings", 1);
+        ArrayList<Integer> savedNum = new ArrayList<>();
+        String defaultStr = "";
+        for (int i = 0; i < length; i++){
+            defaultStr += i + " ";
+        }
+
+        String checkedStr = sharedPreferences.getString(name+"Checked", "");
+        if (checkedStr == ""){
+            savedNum = null;
+        }
+        else {
+            String[] checkedStrArray = checkedStr.split(" ");
+
+            for (int i = 0; i < checkedStrArray.length; i++){
+                savedNum.add(Integer.parseInt(checkedStrArray[i]));
+            }
+
+        }
+        if (savedNum != null){
+            HashSet<Integer> hs=new HashSet<>(savedNum);
+            savedNum = new ArrayList<>(hs);
+            Collections.sort(savedNum);
+        }
+
+        return savedNum;
+    }
+
+    public ArrayList<Integer> defaultValues(int length){
+        ArrayList<Integer> def = new ArrayList<>();
+        for (int i = 0; i < length; i++){
+            def.add(i);
+        }
+        return  def;
     }
 }
