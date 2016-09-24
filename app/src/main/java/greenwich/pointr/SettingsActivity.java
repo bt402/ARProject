@@ -198,12 +198,13 @@ public class SettingsActivity extends Activity {
         }
         else {
             Map<String,?> keys = sharedPreferences.getAll();
-
             String poiBuilder = "";
             for(Map.Entry<String,?> entry : keys.entrySet()){
                 //Log.d("map values", entry.getValue().toString());
                 if (!entry.getKey().toString().contains("Checked")){
-                    poiBuilder += entry.getValue().toString()+"|";
+                    if(!removeUnchecked().contains(entry.getValue().toString())) {
+                        poiBuilder += entry.getValue().toString() + "|";
+                    }
                 }
             }
             // remove last pipe
@@ -268,6 +269,60 @@ public class SettingsActivity extends Activity {
             poiBuilder = "null";
         }
 
+
+        for (int i = 0; i < intrestList.size(); i++) {
+            poiBuilder += intrestList.get(i) + "|";
+        }
+        // remove last pipe
+        if (poiBuilder != null && poiBuilder.length() > 0 && poiBuilder.charAt(poiBuilder.length() - 1) == '|') {
+            poiBuilder = poiBuilder.substring(0, poiBuilder.length() - 1);
+        }
+
+        return poiBuilder;
+    }
+
+    public String removeUnchecked() {
+        String poiBuilder = "";
+        ArrayList<String> intrestList = new ArrayList<>();
+
+        for (int i = 0; i < modelItems.length; i++) {
+            System.out.println(i);
+            if (modelItems[i].getValue() == 0) {
+                if (modelItems[i].getName() == "Animals") {
+                    intrestList.add("veterinary_care|zoo");
+                } else if (modelItems[i].getName() == "Accomodation") {
+                    intrestList.add("lodging");
+                } else if (modelItems[i].getName() == "Food & Drink") {
+                    intrestList.add("bakery|bar|café|department_store|furniture_store|grocery_or_supermarket|meal_delivery|meal_takeaway|restaurant");
+                } else if (modelItems[i].getName() == "Education") {
+                    intrestList.add("school|university");
+                } else if (modelItems[i].getName() == "Entertainment") {
+                    intrestList.add("amusement_park|aquarium|bowling_alley|casino|movie_rental|movie_theater|moving_company|night_club");
+                } else if (modelItems[i].getName() == "Health") {
+                    intrestList.add("dentist|doctor|hospital|pharmacy|physiotherapist|spa");
+                } else if (modelItems[i].getName() == "Library") {
+                    intrestList.add("library");
+                } else if (modelItems[i].getName() == "Shops") {
+                    intrestList.add("clothing_store|convenience_store|electronics_store|florist|hardware_store|home_goods_store|jewelry_store|liquor_store|pet_store|shoe_store|shopping_mall|store|grocery_or_supermarket");
+                } else if (modelItems[i].getName() == "Money") {
+                    intrestList.add("accounting|atm|bank");
+                } else if (modelItems[i].getName() == "Petrol Station") {
+                    intrestList.add("gas_station");
+                } else if (modelItems[i].getName() == "Police") {
+                    intrestList.add("police");
+                } else if (modelItems[i].getName() == "Post Office") {
+                    intrestList.add("post_office");
+                } else if (modelItems[i].getName() == "Sport") {
+                    intrestList.add("gym|stadium");
+                } else if (modelItems[i].getName() == "Underground Station") {
+                    intrestList.add("subway_station");
+                } else if (modelItems[i].getName() == "Tourist Attraction") {
+                    intrestList.add("art_gallery|campground|museum|park|rv_park");
+                } else if (modelItems[i].getName() == "Transport") {
+                    intrestList.add("airport|bus_station|parking|taxi_stand|train_station|transit_station");
+                }
+            }
+        }
 
         for (int i = 0; i < intrestList.size(); i++) {
             poiBuilder += intrestList.get(i) + "|";

@@ -7,8 +7,6 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-feature android:name="android.hardware.camera" android:required="true" />
-    <!--<uses-permission android:name="android.permission.READ_PHONE_STATE"/>
-    <uses-permission android:name="android.permission.READ_SMS" />-->
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -19,13 +17,15 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDso6HCyfGZOnfdkD2AgrtGcHKdMKbdd64"/>
-        <activity android:windowSoftInputMode="adjustPan" android:name="greenwich.pointr.MainActivity">
+        <activity android:windowSoftInputMode="adjustPan" android:name="greenwich.pointr.SplashsScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+        </activity>
+        <activity android:windowSoftInputMode="adjustPan" android:name="greenwich.pointr.MainActivity">
         </activity>
         <activity android:windowSoftInputMode="adjustPan" android:name="greenwich.pointr.SettingsActivity">
         </activity>
