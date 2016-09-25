@@ -216,7 +216,7 @@ public class SettingsActivity extends Activity {
             if (poiBuilder != null && poiBuilder.length() > 0 && poiBuilder.charAt(poiBuilder.length() - 1) == '|') {
                 poiBuilder = poiBuilder.substring(0, poiBuilder.length() - 1);
             }
-
+            if (poiBuilder!= "")
             POIString = poiBuilder;
             resultIntent.putExtra("POI", POIString);
             setResult(Activity.RESULT_OK, resultIntent);

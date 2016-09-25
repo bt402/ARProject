@@ -60,6 +60,9 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     // Places List
     PlacesList nearPlaces;
 
+    // Use to cancel AsyncTask
+    LoadPlaces loadPlaces;
+
     // ListItems data
     ArrayList<HashMap<String, String>> placesListItems = new ArrayList<HashMap<String,String>>();
     double longitude = 0.0;
@@ -156,7 +159,8 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                     @Override
                     public void onClick(View view) {
                         removeRedundantBoxes();
-                        new LoadPlaces().execute(radius);
+                        loadPlaces = new LoadPlaces();
+                        loadPlaces.execute(radius);
                         shuffleBoxes();
                     }
                 }
@@ -348,7 +352,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
                 if (resultCode == Activity.RESULT_OK) {
-                    radius = radius;
+                    radius = data.getStringExtra("radius").toString();
                     types = data.getStringExtra("POI").toString();
                     }
     }
@@ -382,7 +386,8 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         removeRedundantBoxes();
         new LoadMyElevation().execute();
         spinner.setVisibility(View.GONE);
-        new LoadPlaces().execute(radius);
+        loadPlaces = new LoadPlaces();
+        loadPlaces.execute(radius);
         shuffleBoxes();
     }
 
@@ -421,8 +426,6 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
             mLocationManager.removeUpdates(this);
         }
         catch (SecurityException e){}
-        this.finish();
-        System.exit(0);
     }
 
     // Handle sensor events
