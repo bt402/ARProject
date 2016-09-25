@@ -34,6 +34,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class MainActivity extends Activity implements SensorEventListener, LocationListener, OnConnectionFailedListener, KeyEvent.Callback {
 
@@ -358,18 +359,12 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     @Override
     public void onLocationChanged(Location location) {
         // Handle Location the longitude and latidue of the phone with Location Manager
-        LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         spinner = (ProgressBar)findViewById(R.id.progressBar);
         // See if the phone has got permissions
-        Criteria criteria = new Criteria();
-        criteria.setPowerRequirement(Criteria.POWER_HIGH);
-        criteria.setAccuracy(Criteria.ACCURACY_COARSE);
-        criteria.setSpeedRequired(true);
 
-        String BestAvaliableSignalType = lm.getBestProvider(criteria, false);
         try{
             spinner.setVisibility(View.VISIBLE);
-            location = lm.getLastKnownLocation(BestAvaliableSignalType);
+            location = getLocation();
             longitude = location.getLongitude();
             latitude = location.getLatitude();
         }
@@ -410,22 +405,24 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         mSensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_GAME);
 
         try {
-            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 1, this);
-            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 5000, 1, this);
-            mLocationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 5000, 1, this);
+            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 1, this);
+            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 2000, 1, this);
+            mLocationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 2000, 1, this);
         }
         catch (SecurityException se){}
     }
 
     @Override
     public void onPause(){
-        super.onPause();
         // To save battery
+        super.onPause();
         mSensorManager.unregisterListener(this);
         try{
             mLocationManager.removeUpdates(this);
         }
         catch (SecurityException e){}
+        this.finish();
+        System.exit(0);
     }
 
     // Handle sensor events
@@ -547,6 +544,28 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         return Math.round(dist * 1000);
     }
 
+    private Location getLocation(){
+        // http://stackoverflow.com/questions/20438627/getlastknownlocation-returns-null
+        mLocationManager = (LocationManager)getApplicationContext().getSystemService(LOCATION_SERVICE);
+        List<String> providers = mLocationManager.getProviders(true);
+        Location bestLocation = null;
+        Location l = null;
+        for (String provider : providers) {
+            try {
+                l = mLocationManager.getLastKnownLocation(provider);
+            }
+            catch (SecurityException se){}
+            if (l == null) {
+                continue;
+            }
+            if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
+                // Found best last known location: %s", l);
+                bestLocation = l;
+            }
+        }
+        return bestLocation;
+    }
+
     class LoadPlaces extends AsyncTask<String, String, String> {
         /**
          * getting Places JSON
@@ -555,19 +574,12 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
             // creating Places class object
             googlePlaces = new GooglePlaces();
 
-            LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
             double longitude = 0.0;
             double latitude = 0.0;
-            // See if the phone has got permissions
             Location location;
-            Criteria criteria = new Criteria();
-            criteria.setPowerRequirement(Criteria.POWER_HIGH);
-            criteria.setAccuracy(Criteria.ACCURACY_COARSE);
-            criteria.setSpeedRequired(true);
 
-            String BestAvaliableSignalType = lm.getBestProvider(criteria, false);
             try{
-                location = lm.getLastKnownLocation(BestAvaliableSignalType);
+                location = getLocation();
                 longitude = location.getLongitude();
                 latitude = location.getLatitude();
             }

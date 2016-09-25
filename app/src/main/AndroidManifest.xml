@@ -20,10 +20,8 @@
         <activity android:windowSoftInputMode="adjustPan" android:name="greenwich.pointr.SplashsScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
         <activity android:windowSoftInputMode="adjustPan" android:name="greenwich.pointr.MainActivity">
         </activity>

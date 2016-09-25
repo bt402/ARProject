@@ -6,13 +6,11 @@ import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.util.Log;
 import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
 
 public class OptionDialog extends DialogFragment{
     String[] typesList = {"Place1", "Test", "Beer that way", "Pub", "Roman Bürki", "Swiss football"};

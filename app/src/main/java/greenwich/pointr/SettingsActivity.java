@@ -196,6 +196,11 @@ public class SettingsActivity extends Activity {
             SettingsDialogError settingsDialogError = new SettingsDialogError();
             settingsDialogError.emptyList(this);
         }
+        else if (POIString == "null"){
+            resultIntent.putExtra("POI", POIString);
+            setResult(Activity.RESULT_OK, resultIntent);
+            super.onBackPressed();
+        }
         else {
             Map<String,?> keys = sharedPreferences.getAll();
             String poiBuilder = "";
