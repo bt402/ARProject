@@ -705,7 +705,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                             double ang = poiAngle(poiLat, poiLon, angle, Integer.parseInt(radius));
 
                             if (inFOV(poiLat, poiLon, angle, Integer.parseInt(radius))){
-                                if (!directionPOIs.contains(foundPOIArray[i].toString())){
+                                if (!directionPOIs.contains(foundPOIArray[i].toString()) && elevationListArray.size() > 0){
                                     directionPOIs.add(foundPOIArray[i].toString() + " " + distance + "m");
                                     addImg(ang, foundPOIArray[i].toString() + " " + distance + "m", elevationListArray.get(i), referenceNumArray.get(i));
                                 }
