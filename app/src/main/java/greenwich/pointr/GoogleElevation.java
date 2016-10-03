@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 
 public class GoogleElevation {
     private static final String ELEVATION_TAG = "elevation";
@@ -27,7 +28,7 @@ public class GoogleElevation {
     private static final String ELEVATION_SEARCH_URL = "https://maps.googleapis.com/maps/api/elevation/json?";
     private static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
     static String elevationStr = "";
-    public static ArrayList<Double> elevationList;
+    public static LinkedHashSet<Double> elevationList;
 
 
     public static double getElevation(double longitude, double latitude){
@@ -67,7 +68,7 @@ public class GoogleElevation {
     public static void getElevation(ArrayList<String> positions){
 
         String coordinatesBuilder = "";
-        elevationList = new ArrayList<>();
+        elevationList = new LinkedHashSet<>();
 
         for (int i = 0; i < positions.size(); i++){
             // dis[0] = lat, dis[1] = long

@@ -1,17 +1,14 @@
 package greenwich.pointr;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -34,6 +31,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 public class MainActivity extends Activity implements SensorEventListener, LocationListener, OnConnectionFailedListener, KeyEvent.Callback {
@@ -43,16 +41,15 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     Sensor accelerometer;
     Sensor magnetometer;
     private LocationManager mLocationManager;
-    ArrayList<String> foundPOIs;
+    LinkedHashSet<String> foundPOIs;
     ArrayList<String> foundLoc;
     ArrayList<String> directionPOIs;
-    ArrayList<String> referenceNum;
+    LinkedHashSet<String> referenceNum;
 
     // Information boxes components
     // Use to remove the redundant box of screen
     ArrayList<ImageView> imageList = new ArrayList<>();
     ArrayList<TextView> textList = new ArrayList<>();
-    ArrayList<ImageView> shuffleList = new ArrayList<>();
 
     // Google Places
     GooglePlaces googlePlaces;
@@ -278,51 +275,68 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         shuffleImg.setVisibility(View.INVISIBLE);
         for (int i = 0; i < imageList.size(); i++){
             relativeLayout.removeView(imageList.get(i));
-        }
-        for (int i = 0; i < textList.size(); i++){
             relativeLayout.removeView(textList.get(i));
         }
     }
-    ArrayList<ImageView> overlapList = new ArrayList<>();
-    ArrayList<TextView> overlapText = new ArrayList<>();
+    LinkedHashSet<ImageView> overlapList = new LinkedHashSet<>();
+    LinkedHashSet<TextView> overlapText = new LinkedHashSet<>();
+
     public void shuffleBoxes(){
-        overlapList.trimToSize();
-        overlapText.trimToSize();
-        // Left x
-        float leftX = 0;
-        // Right x
-        float rightX = 0;
-        // Bottom y
-        float botY = 0;
-        // TopY
-        float topY = 0;
-        for (int i = 0; i < imageList.size() - 1; i++) {
-            Rect box1 = new Rect();
-            imageList.get(i).getHitRect(box1);
-
-            Rect box2 = new Rect();
-            imageList.get(i+1).getHitRect(box2);
-
-            if (Rect.intersects(box1, box2)){
-                if (!overlapText.contains(textList.get(i))){
-                    System.out.println(textList.get(i).getText().toString() + " overlaps with " + textList.get(i + 1).getText().toString());
-                    overlapList.add(imageList.get(i));
-                    overlapText.add(textList.get(i));
-                    shuffleImg.setVisibility(View.VISIBLE);
+        final ArrayList<Integer> indexList = new ArrayList<>();
+        for (int i = 0; i < textList.size(); i++){
+            for (int j = (textList.size())/2; j < textList.size(); j ++ ) {
+                if (textList.get(j).getText().toString().contains(textList.get(i).getText().toString())) {
+                        textList.remove(j);
+                        imageList.remove(j);
                 }
             }
+        }
 
+        for (int i = 0; i < imageList.size(); i++) {
+            for (int j = 0; j < imageList.size(); j++) {
+                // left, top, right, bottom
+                //  txt.setWidth(270);
+                //  txt.setHeight(185);
+                // http://stackoverflow.com/questions/23302698/java-check-if-two-rectangles-overlap-at-any-point
+                double x1 = imageList.get(i).getX();
+                double y1 = imageList.get(i).getY();
+                double x2 = x1 + 270;
+                double y2 = y1 + 185;
+
+
+                double x3 = imageList.get(j).getX();
+                double y3 = imageList.get(j).getY();
+                double x4 = x3 + 270;
+                double y4 = y3 + 185;
+
+                if (x2 < x3 || x4 < x1 || y2 < y3 || y4 < y1) {
+                        // DOES NOT OVERLAP
+                } else { // OVERLAP
+                    //if (!overlapText.contains(textList.get(i)) || !overlapText.contains(textList.get(j))) {
+                        System.out.println(textList.get(i).getText().toString() + " overlaps with " + textList.get(j).getText().toString());
+                        overlapList.add(imageList.get(i));
+                        overlapList.add(imageList.get(j));
+                        overlapText.add(textList.get(i));
+                        overlapText.add(textList.get(j));
+                        shuffleImg.setVisibility(View.VISIBLE);
+                    //}
+                }
+            }
         }
 
                 shuffleImg.setOnClickListener(new View.OnClickListener() {
                   @Override
                   public void onClick(View view)
                   {
+                      if (indexIterator == 0 ){
+                          indexIterator = textList.size()/2;
+                      }
+
                       if (indexIterator >= textList.size()) {
-                              indexIterator = 0;
-                          imageList.get(indexIterator).setAlpha(0.5f);
-                          textList.get(indexIterator).setAlpha(0.5f);
-                          textList.get(indexIterator).setTextColor(Color.rgb(255,255,255));
+                          imageList.get(indexIterator-1).setAlpha(0.5f);
+                          textList.get(indexIterator-1).setAlpha(0.5f);
+                          textList.get(indexIterator-1).setTextColor(Color.rgb(255,255,255));
+                          indexIterator = textList.size()/2;
                       }
                       if (indexIterator >= 1){
                           imageList.get(indexIterator-1).setAlpha(0.5f);
@@ -330,14 +344,15 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                           textList.get(indexIterator-1).setTextColor(Color.rgb(255,255,255));
                       }
                       System.out.println(indexIterator);
-                      System.out.println("Size of sie list is: " + overlapText.size());
-                      for(int counter = 0; counter < imageList.size(); counter++) {
-                          if(overlapText.contains(textList.get(counter))) {
+                      System.out.println("Size of the list is: " + textList.size());
+                      for(int counter = 0; counter < textList.size(); counter++) {
+                          //if(overlapText.contains(textList.get(counter))) {
                               imageList.get(indexIterator).bringToFront();
                               imageList.get(indexIterator).setAlpha(1f);
                               textList.get(indexIterator).bringToFront();
+                              textList.get(indexIterator).setAlpha(1f);
                               textList.get(indexIterator).setTextColor(Color.rgb(71,74,209));
-                          }
+                         // }
                       }
                       indexIterator++;
                   }
@@ -378,10 +393,10 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         }
         // calling background Async task to load Google Places
         // After getting places from Google all the data is shown in listview
-        foundPOIs = new ArrayList<String>();
+        foundPOIs = new LinkedHashSet<String>();
         foundLoc = new ArrayList<String>();
         directionPOIs = new ArrayList<String>();
-        referenceNum = new ArrayList<>();
+        referenceNum = new LinkedHashSet<>();
         GooglePlaces.foundLoc = new ArrayList<>();
         removeRedundantBoxes();
         new LoadMyElevation().execute();
@@ -486,6 +501,9 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
             public void run() {
                 removeRedundantBoxes();
                 if (longitude != 0 && latitude != 0){
+                    Object[] foundPOIArray = foundPOIs.toArray();
+                    ArrayList<Double> elevationListArray = new ArrayList<Double>(GoogleElevation.elevationList);
+                    ArrayList<String> referenceNumArray = new ArrayList<>(referenceNum);
                     for (int i = 0; i < foundPOIs.size(); i++){
                         // dis[0] = lat, dis[1] = long
                         String[] dis = foundLoc.get(i).split(" ");
@@ -497,7 +515,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                         double ang = poiAngle(poiLat, poiLon, angle, Integer.parseInt(radius));
 
                         if (inFOV(poiLat, poiLon, angle, Integer.parseInt(radius))){
-                            addImg(ang, foundPOIs.get(i) + " " + distance + "m", GoogleElevation.elevationList.get(i), referenceNum.get(i));
+                            addImg(ang, foundPOIArray[i].toString() + " " + distance + "m", elevationListArray.get(i), referenceNumArray.get(i));
                         }
                     }
 
@@ -672,6 +690,9 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                         double latitudeDir = kilometer / 111.32;
                         TextView deg = (TextView) findViewById(R.id.textView2);
                         String[] degrees = deg.getText().toString().split(" ");
+                        Object[] foundPOIArray = foundPOIs.toArray();
+                        ArrayList<Double> elevationListArray = new ArrayList<>(GoogleElevation.elevationList);
+                        ArrayList<String> referenceNumArray = new ArrayList<>(referenceNum);
                         for (int i = 0; i < foundPOIs.size(); i++){
                             // dis[0] = lat, dis[1] = long
                             String[] dis = foundLoc.get(i).split(" ");
@@ -684,17 +705,13 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                             double ang = poiAngle(poiLat, poiLon, angle, Integer.parseInt(radius));
 
                             if (inFOV(poiLat, poiLon, angle, Integer.parseInt(radius))){
-                                if (!directionPOIs.contains(foundPOIs.get(i))){
-                                    directionPOIs.add(foundPOIs.get(i) + " " + distance + "m");
-                                    addImg(ang, foundPOIs.get(i) + " " + distance + "m", GoogleElevation.elevationList.get(i), referenceNum.get(i));
+                                if (!directionPOIs.contains(foundPOIArray[i].toString())){
+                                    directionPOIs.add(foundPOIArray[i].toString() + " " + distance + "m");
+                                    addImg(ang, foundPOIArray[i].toString() + " " + distance + "m", elevationListArray.get(i), referenceNumArray.get(i));
                                 }
 
                             }
                         }
-
-                        //ListView lv = (ListView) findViewById(R.id.listView);
-                        //lv.setAdapter(new ArrayAdapter<String>(MainActivity.this, R.layout.simple_list_item_1, directionPOIs));
-                        //shuffleBoxes();
                     }
                     else if (status.equals("ZERO_RESULTS")){
                         t.setText("No places in radius");
