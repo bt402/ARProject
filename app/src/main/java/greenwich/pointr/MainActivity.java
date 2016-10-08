@@ -1,5 +1,7 @@
 package greenwich.pointr;
 
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -18,6 +20,7 @@ import android.os.Bundle;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.animation.TranslateAnimation;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -476,6 +479,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                     }
                     String compassDirection = directions[ (int)Math.round(((degrees % 360) / 45)) % 8 ];
                     t.setText(Float.toString(Math.round(Math.toDegrees(orientation[0]))) + " = " + compassDirection);
+                    animateBoxes(orientation[0]);
                 }
                 updateView(orientation[0]);
             }
@@ -522,6 +526,25 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                 }
             }
         });
+    }
+
+    public void animateBoxes(float angle){
+        // imageList
+        // textList
+        // float fromXDelta, float toXDelta, float fromYDelta, float toYDelta
+
+        for (int i = 0; i < imageList.size(); i++){
+            TranslateAnimation animation = new TranslateAnimation(imageList.get(i).getX(), angle, imageList.get(i).getY(), imageList.get(i).getY());
+            animation.setDuration(1000);
+            animation.setFillAfter(false);
+            imageList.get(i).startAnimation(animation);
+            textList.get(i).startAnimation(animation);
+            /*ObjectAnimator animX = ObjectAnimator.ofFloat(imageList.get(i), "x", imageList.get(i).getX()-angle);
+            ObjectAnimator animY = ObjectAnimator.ofFloat(textList.get(i), "y", textList.get(i).getX()-angle);
+            AnimatorSet animSetXY = new AnimatorSet();
+            animSetXY.playTogether(animX, animY);
+            animSetXY.start();*/
+        }
     }
 
     @Override
@@ -685,7 +708,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                         }
                         TextView directionView = (TextView) findViewById(R.id.textView2);
                         String[] arr = directionView.getText().toString().split(" ");
-                        double kilometer = Integer.parseInt(radius) / 1000;
+                        double kilometer = (int)Double.parseDouble(radius) / 1000;
                         double longitudeDir = kilometer / 111.2;
                         double latitudeDir = kilometer / 111.32;
                         TextView deg = (TextView) findViewById(R.id.textView2);
@@ -702,9 +725,9 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
 
                             String distance = ""+findDistance(longitude, latitude, poiLon, poiLat);
 
-                            double ang = poiAngle(poiLat, poiLon, angle, Integer.parseInt(radius));
+                            double ang = poiAngle(poiLat, poiLon, angle, (int)Double.parseDouble(radius));
 
-                            if (inFOV(poiLat, poiLon, angle, Integer.parseInt(radius))){
+                            if (inFOV(poiLat, poiLon, angle, (int)Double.parseDouble(radius))){
                                 if (!directionPOIs.contains(foundPOIArray[i].toString()) && elevationListArray.size() > 0){
                                     directionPOIs.add(foundPOIArray[i].toString() + " " + distance + "m");
                                     addImg(ang, foundPOIArray[i].toString() + " " + distance + "m", elevationListArray.get(i), referenceNumArray.get(i));

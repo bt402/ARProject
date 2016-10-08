@@ -4,7 +4,6 @@
     android:id="@+id/myRelativeLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:animateLayoutChanges="true"
     tools:context="greenwich.pointr.MainActivity">
 
     <FrameLayout
@@ -19,16 +18,6 @@
 
     </FrameLayout>
 
-<!--
-    <LinearLayout
-        android:layout_below="@id/mySurfaceView"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:gravity="center"
-        android:id="@+id/linearLayout">
-    </LinearLayout>
--->
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

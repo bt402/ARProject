@@ -18,13 +18,11 @@ public class CustomAdapter extends ArrayAdapter {
     public ArrayList<ToggleButton> toggleButtonArrayList = new ArrayList<>();
     public CustomAdapter(Context context, Model[] resource) {
         super(context,R.layout.row,resource);
-        // TODO Auto-generated constructor stub
         this.context = context;
         this.modelItems = resource;
     }
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
-        // TODO Auto-generated method stub
         LayoutInflater inflater = ((Activity)context).getLayoutInflater();
         convertView = inflater.inflate(R.layout.row, parent, false);
         TextView name = (TextView) convertView.findViewById(R.id.textView1);
