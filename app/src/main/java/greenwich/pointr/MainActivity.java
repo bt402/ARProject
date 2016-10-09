@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -37,7 +38,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 
-public class MainActivity extends Activity implements SensorEventListener, LocationListener, OnConnectionFailedListener, KeyEvent.Callback {
+public class MainActivity extends Activity implements SensorEventListener, LocationListener, OnConnectionFailedListener, KeyEvent.Callback, Animation.AnimationListener {
 
     private static double myElevation;
     private SensorManager mSensorManager;
@@ -478,8 +479,15 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                         degrees += 360;
                     }
                     String compassDirection = directions[ (int)Math.round(((degrees % 360) / 45)) % 8 ];
+                    final double angle = Math.round(Math.toDegrees(orientation[0]));
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            animateBoxes(angle);
+                        }
+                    }.run();
+
                     t.setText(Float.toString(Math.round(Math.toDegrees(orientation[0]))) + " = " + compassDirection);
-                    animateBoxes(orientation[0]);
                 }
                 updateView(orientation[0]);
             }
@@ -527,23 +535,17 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
             }
         });
     }
-
-    public void animateBoxes(float angle){
-        // imageList
-        // textList
+    double angle = 0;
+    public void animateBoxes(double angle){
         // float fromXDelta, float toXDelta, float fromYDelta, float toYDelta
-
+        //removeRedundantBoxes();
+        this.angle = angle;
         for (int i = 0; i < imageList.size(); i++){
-            TranslateAnimation animation = new TranslateAnimation(imageList.get(i).getX(), angle, imageList.get(i).getY(), imageList.get(i).getY());
-            animation.setDuration(1000);
+            TranslateAnimation animation = new TranslateAnimation(imageList.get(i).getX(), imageList.get(i).getX()+(float)angle, imageList.get(i).getY(), imageList.get(i).getY());
+            animation.setDuration(200);
             animation.setFillAfter(false);
             imageList.get(i).startAnimation(animation);
             textList.get(i).startAnimation(animation);
-            /*ObjectAnimator animX = ObjectAnimator.ofFloat(imageList.get(i), "x", imageList.get(i).getX()-angle);
-            ObjectAnimator animY = ObjectAnimator.ofFloat(textList.get(i), "y", textList.get(i).getX()-angle);
-            AnimatorSet animSetXY = new AnimatorSet();
-            animSetXY.playTogether(animX, animY);
-            animSetXY.start();*/
         }
     }
 
@@ -608,6 +610,26 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
             }
         }
         return bestLocation;
+    }
+
+    @Override
+    public void onAnimationStart(Animation animation) {
+
+    }
+
+    @Override
+    public void onAnimationEnd(Animation animation) {
+        for (int i = 0; i < imageList.size(); i ++) {
+            imageList.get(i).clearAnimation();
+            textList.get(i).clearAnimation();
+            imageList.get(i).setX(imageList.get(i).getX() + (float)angle);
+            textList.get(i).setX(imageList.get(i).getX() + (float)angle);
+        }
+    }
+
+    @Override
+    public void onAnimationRepeat(Animation animation) {
+
     }
 
     class LoadPlaces extends AsyncTask<String, String, String> {
