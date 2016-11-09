@@ -53,7 +53,7 @@ public class GoogleElevation {
             while ((line = in.readLine()) != null) {
                 if (line.contains(ELEVATION_TAG)){
                     String[] arr = line.split(" ");
-                    elevationStr = arr[11].substring(0,arr[11].length()-1);
+                    elevationStr = arr[11].substring(0,arr[11].length()-1).toString();
                 }
 
             }

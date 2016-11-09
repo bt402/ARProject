@@ -2,6 +2,7 @@ package greenwich.pointr;
 
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -451,14 +452,14 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     float[] mGravity;
     float[] mGeomagnetic;
     @Override
-    public void onSensorChanged(SensorEvent event){
+    public void onSensorChanged(final SensorEvent event){
 
         TextView t = (TextView) findViewById(R.id.textView2);
         String directions[] = {"N", "NE", "E", "SE", "S", "SW", "W", "NW"};
         // x axis = event.values[0]
         // y axis = event.values[1]
         // z axis = event.values[2]
-        float orientation[] = new float[3];
+        float orientation[];
 
         // Check if phone has got accelerometer and magnetometer
         if (mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null && mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD) != null){
@@ -479,17 +480,18 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                         degrees += 360;
                     }
                     String compassDirection = directions[ (int)Math.round(((degrees % 360) / 45)) % 8 ];
-                    final double angle = Math.round(Math.toDegrees(orientation[0]));
-                    new Runnable() {
+                    //final double angle = Math.round(Math.toDegrees(orientation[0]));
+                    /*new Runnable() {
                         @Override
                         public void run() {
-                            animateBoxes(angle);
+                            System.out.println(event.values[0]);
+                            animateBoxes(event.values[0]);
                         }
-                    }.run();
+                    }.run();*/
 
                     t.setText(Float.toString(Math.round(Math.toDegrees(orientation[0]))) + " = " + compassDirection);
                 }
-                updateView(orientation[0]);
+                //updateView(orientation[0]);
             }
         }
         // Check if phone has got Compass
@@ -542,8 +544,10 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         this.angle = angle;
         for (int i = 0; i < imageList.size(); i++){
             TranslateAnimation animation = new TranslateAnimation(imageList.get(i).getX(), imageList.get(i).getX()+(float)angle, imageList.get(i).getY(), imageList.get(i).getY());
-            animation.setDuration(200);
+            animation.setDuration(1000);
             animation.setFillAfter(false);
+            animation.setFillBefore(true);
+            animation.setRepeatCount(ValueAnimator.INFINITE);
             imageList.get(i).startAnimation(animation);
             textList.get(i).startAnimation(animation);
         }
@@ -620,10 +624,10 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     @Override
     public void onAnimationEnd(Animation animation) {
         for (int i = 0; i < imageList.size(); i ++) {
-            imageList.get(i).clearAnimation();
-            textList.get(i).clearAnimation();
-            imageList.get(i).setX(imageList.get(i).getX() + (float)angle);
-            textList.get(i).setX(imageList.get(i).getX() + (float)angle);
+            //imageList.get(i).clearAnimation();
+            //textList.get(i).clearAnimation();
+            imageList.get(i).setX(0);
+            textList.get(i).setX(0);
         }
     }
 
