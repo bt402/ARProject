@@ -18,11 +18,14 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.Layout.Alignment;
+import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.util.Log;
 import android.view.View;
+
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 
 // https://code.tutsplus.com/tutorials/android-sdk-augmented-reality-camera-sensor-setup--mobile-7873
 
@@ -65,7 +68,6 @@ public class OverlayView extends View implements SensorEventListener,
     private Sensor gyroSensor;
 
     private TextPaint contentPaint;
-
     private Paint targetPaint;
 
     public OverlayView(Context context) {
@@ -135,25 +137,29 @@ public class OverlayView extends View implements SensorEventListener,
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
+
+        ArrayList<String> foundLoc = MainActivity.foundLoc; // lat, lon
+        ArrayList<String> directionPOIs = MainActivity.directionPOIs; // name + distance  USE THIS
+
+        if (directionPOIs != null && foundLoc != null){
+            if (directionPOIs.size() > 0){
+
+        for (int i = 0; i < directionPOIs.size(); i++){
+
         // Draw something fixed (for now) over the camera view
+        float currentBearing = 0.0f;
 
-        float curBearingToWestminster = 0.0f;
+            Location location = new Location("manual");
 
-        StringBuilder text = new StringBuilder(accelData).append("\n");
-        text.append(compassData).append("\n");
-        text.append(gyroData).append("\n");
+            String[] dis = foundLoc.get(i).split(" ");
+            double poiLat = Double.parseDouble(dis[0]);
+            double poiLon = Double.parseDouble(dis[1]);
+
+            location.setLatitude(poiLat);
+            location.setLongitude(poiLon);
 
         if (lastLocation != null) {
-            text.append(
-                    String.format("GPS = (%.3f, %.3f) @ (%.2f meters up)",
-                            lastLocation.getLatitude(),
-                            lastLocation.getLongitude(),
-                            lastLocation.getAltitude())).append("\n");
-
-            curBearingToWestminster = lastLocation.bearingTo(westminsterPalace);
-
-            text.append(String.format("Bearing to Westminster: %.3f", curBearingToWestminster))
-                    .append("\n");
+            currentBearing = lastLocation.bearingTo(location);
         }
 
         // compute rotation matrix
@@ -174,15 +180,13 @@ public class OverlayView extends View implements SensorEventListener,
                 float orientation[] = new float[3];
                 SensorManager.getOrientation(cameraRotation, orientation);
 
-                text.append(String.format("Orientation (%.3f, %.3f, %.3f)", Math.toDegrees(orientation[0]), Math.toDegrees(orientation[1]), Math.toDegrees(orientation[2]))).append("\n");
-
                 // draw horizon line (a nice sanity check piece) and the target (if it's on the screen)
                 canvas.save();
                 // use roll for screen rotation
                 canvas.rotate((float)(0.0f- Math.toDegrees(orientation[2])));
 
                 // Translate, but normalize for the FOV of the camera -- basically, pixels per degree, times degrees == pixels
-                float dx = (float) ((canvas.getWidth()/ horizontalFOV) * (Math.toDegrees(orientation[0])-curBearingToWestminster));
+                float dx = (float) ((canvas.getWidth()/ horizontalFOV) * (Math.toDegrees(orientation[0])-currentBearing));
                 float dy = (float) ((canvas.getHeight()/ verticalFOV) * Math.toDegrees(orientation[1])) ;
 
                 // wait to translate the dx so the horizon doesn't get pushed off
@@ -190,22 +194,34 @@ public class OverlayView extends View implements SensorEventListener,
 
 
                 // make our line big enough to draw regardless of rotation and translation
-                canvas.drawLine(0f - canvas.getHeight(), canvas.getHeight()/2, canvas.getWidth()+canvas.getHeight(), canvas.getHeight()/2, targetPaint);
+                //canvas.drawLine(0f - canvas.getHeight(), canvas.getHeight()/2, canvas.getWidth()+canvas.getHeight(), canvas.getHeight()/2, targetPaint);
 
                 // now translate the dx
                 canvas.translate(0.0f-dx, 0.0f);
 
-                Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.frame);
-                bmp.setHasAlpha(true);
+                Bitmap bmpOrg = BitmapFactory.decodeResource(getResources(), R.drawable.frame);
+                bmpOrg.setHasAlpha(true);
+                int width = (int)(bmpOrg.getWidth() * 0.4f);
+                int height = (int)(bmpOrg.getHeight() * 0.3f);
+
+                // Scale the image to 30% of height and 40% of width
+                Bitmap scaledbmp;
+                scaledbmp = bmpOrg.createScaledBitmap(bmpOrg, width, height, true);
+
+                Paint boxPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+                boxPaint.setAlpha(85);
 
 
                 Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
                 textPaint.setColor(Color.WHITE);
-                textPaint.setTextSize(100);
+                // originally 40
+                textPaint.setTextSize(20);
+                textPaint.setTextAlign(Align.LEFT);
+
 
                 // draw our point -- we've rotated and translated this to the right spot already
-                canvas.drawBitmap(bmp, canvas.getWidth()/2, canvas.getHeight()/2, null);
-                canvas.drawText("Westminster", canvas.getWidth()/2 + 100, canvas.getHeight()/2 + 100, textPaint);
+                canvas.drawBitmap(scaledbmp, canvas.getWidth()/2, canvas.getHeight()/2, boxPaint);
+                canvas.drawText(directionPOIs.get(i), canvas.getWidth()/2 + 20, canvas.getHeight()/2 + 40, textPaint);
                 //canvas.drawCircle(canvas.getWidth()/2, canvas.getHeight()/2, 18.0f, targetPaint);
 
                 canvas.restore();
@@ -215,10 +231,11 @@ public class OverlayView extends View implements SensorEventListener,
 
         canvas.save();
         canvas.translate(15.0f, 15.0f);
-        StaticLayout textBox = new StaticLayout(text.toString(), contentPaint,
-                480, Alignment.ALIGN_NORMAL, 1.0f, 0.0f, true);
-        textBox.draw(canvas);
         canvas.restore();
+
+                }
+            }
+        }
     }
 
     public void onAccuracyChanged(Sensor arg0, int arg1) {
