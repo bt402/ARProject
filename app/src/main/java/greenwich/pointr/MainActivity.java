@@ -1,8 +1,5 @@
 package greenwich.pointr;
 
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
-import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -21,8 +18,7 @@ import android.os.Bundle;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.TranslateAnimation;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -39,7 +35,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 
-public class MainActivity extends Activity implements SensorEventListener, LocationListener, OnConnectionFailedListener, KeyEvent.Callback, Animation.AnimationListener {
+public class MainActivity extends Activity implements SensorEventListener, LocationListener, OnConnectionFailedListener, KeyEvent.Callback {
 
     private static double myElevation;
     private SensorManager mSensorManager;
@@ -85,6 +81,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     static int indexIterator = 0;
     ImageView shuffleImg;
 
+    private OverlayView arContent;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -198,6 +195,10 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
             }
         });
 
+        FrameLayout arViewPane = (FrameLayout) findViewById(R.id.mySurfaceView);
+
+        arContent = new OverlayView(getApplicationContext());
+        arViewPane.addView(arContent);
 
     }
 
@@ -287,7 +288,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     LinkedHashSet<TextView> overlapText = new LinkedHashSet<>();
 
     public void shuffleBoxes(){
-        final ArrayList<Integer> indexList = new ArrayList<>();
+        //final ArrayList<Integer> indexList = new ArrayList<>();
         for (int i = 0; i < textList.size(); i++){
             for (int j = (textList.size())/2; j < textList.size(); j ++ ) {
                 if (textList.get(j).getText().toString().contains(textList.get(i).getText().toString())) {
@@ -538,20 +539,6 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         });
     }
     double angle = 0;
-    public void animateBoxes(double angle){
-        // float fromXDelta, float toXDelta, float fromYDelta, float toYDelta
-        //removeRedundantBoxes();
-        this.angle = angle;
-        for (int i = 0; i < imageList.size(); i++){
-            TranslateAnimation animation = new TranslateAnimation(imageList.get(i).getX(), imageList.get(i).getX()+(float)angle, imageList.get(i).getY(), imageList.get(i).getY());
-            animation.setDuration(1000);
-            animation.setFillAfter(false);
-            animation.setFillBefore(true);
-            animation.setRepeatCount(ValueAnimator.INFINITE);
-            imageList.get(i).startAnimation(animation);
-            textList.get(i).startAnimation(animation);
-        }
-    }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {}
@@ -614,26 +601,6 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
             }
         }
         return bestLocation;
-    }
-
-    @Override
-    public void onAnimationStart(Animation animation) {
-
-    }
-
-    @Override
-    public void onAnimationEnd(Animation animation) {
-        for (int i = 0; i < imageList.size(); i ++) {
-            //imageList.get(i).clearAnimation();
-            //textList.get(i).clearAnimation();
-            imageList.get(i).setX(0);
-            textList.get(i).setX(0);
-        }
-    }
-
-    @Override
-    public void onAnimationRepeat(Animation animation) {
-
     }
 
     class LoadPlaces extends AsyncTask<String, String, String> {
