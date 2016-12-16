@@ -42,9 +42,9 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     Sensor accelerometer;
     Sensor magnetometer;
     private LocationManager mLocationManager;
-    LinkedHashSet<String> foundPOIs;
-    ArrayList<String> foundLoc;
-    ArrayList<String> directionPOIs;
+    public static LinkedHashSet<String> foundPOIs;
+    public static ArrayList<String> foundLoc;
+    public static ArrayList<String> directionPOIs;
     LinkedHashSet<String> referenceNum;
 
     // Information boxes components
@@ -186,7 +186,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                     Intent intent = new Intent(Intent.ACTION_SEND);
                     intent.setType("plain/text");
                     intent.putExtra(Intent.EXTRA_EMAIL, new String[]{"marcinbrett@gmail.com"});
-                    intent.putExtra(Intent.EXTRA_SUBJECT, "GuideAR log file (Courtesy of Josh T)");
+                    intent.putExtra(Intent.EXTRA_SUBJECT, "GuideAR log file");
                     //intent.putExtra (Intent.EXTRA_STREAM, Uri.parse ("file://" + fullName));
                     intent.putExtra(Intent.EXTRA_TEXT, e.getMessage() + " \n \n " + errors); // do this so some email clients don't complain about empty body.
                     startActivity(intent);
@@ -197,11 +197,13 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
 
         FrameLayout arViewPane = (FrameLayout) findViewById(R.id.mySurfaceView);
 
+        // public void addImg(double angle, String text, double elevation, final String reference)
+        // //addImg(ang, foundPOIArray[i].toString() + " " + distance + "m", elevationListArray.get(i), referenceNumArray.get(i));
         arContent = new OverlayView(getApplicationContext());
         arViewPane.addView(arContent);
 
     }
-
+/*
     public void addImg(double angle, String text, double elevation, final String reference){
         RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.myRelativeLayout);
         ImageView img = new ImageView(MainActivity.this);
@@ -274,7 +276,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         });
 
 
-    }
+    }*/
 
     public void removeRedundantBoxes(){
         RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.myRelativeLayout);
@@ -368,6 +370,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
 
 
     }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -481,18 +484,8 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                         degrees += 360;
                     }
                     String compassDirection = directions[ (int)Math.round(((degrees % 360) / 45)) % 8 ];
-                    //final double angle = Math.round(Math.toDegrees(orientation[0]));
-                    /*new Runnable() {
-                        @Override
-                        public void run() {
-                            System.out.println(event.values[0]);
-                            animateBoxes(event.values[0]);
-                        }
-                    }.run();*/
-
                     t.setText(Float.toString(Math.round(Math.toDegrees(orientation[0]))) + " = " + compassDirection);
                 }
-                //updateView(orientation[0]);
             }
         }
         // Check if phone has got Compass
@@ -508,37 +501,6 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
 
 
     }
-
-    public void updateView(double ang){
-        final double angle = ang;
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                removeRedundantBoxes();
-                if (longitude != 0 && latitude != 0){
-                    Object[] foundPOIArray = foundPOIs.toArray();
-                    ArrayList<Double> elevationListArray = new ArrayList<Double>(GoogleElevation.elevationList);
-                    ArrayList<String> referenceNumArray = new ArrayList<>(referenceNum);
-                    for (int i = 0; i < foundPOIs.size(); i++){
-                        // dis[0] = lat, dis[1] = long
-                        String[] dis = foundLoc.get(i).split(" ");
-                        double poiLat = Double.parseDouble(dis[0]);
-                        double poiLon = Double.parseDouble(dis[1]);
-
-                        String distance = ""+findDistance(longitude, latitude, poiLon, poiLat);
-
-                        double ang = poiAngle(poiLat, poiLon, angle, Integer.parseInt(radius));
-
-                        if (inFOV(poiLat, poiLon, angle, Integer.parseInt(radius))){
-                            addImg(ang, foundPOIArray[i].toString() + " " + distance + "m", elevationListArray.get(i), referenceNumArray.get(i));
-                        }
-                    }
-
-                }
-            }
-        });
-    }
-    double angle = 0;
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {}
@@ -723,7 +685,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                             if (inFOV(poiLat, poiLon, angle, (int)Double.parseDouble(radius))){
                                 if (!directionPOIs.contains(foundPOIArray[i].toString()) && elevationListArray.size() > 0){
                                     directionPOIs.add(foundPOIArray[i].toString() + " " + distance + "m");
-                                    addImg(ang, foundPOIArray[i].toString() + " " + distance + "m", elevationListArray.get(i), referenceNumArray.get(i));
+                                    //addImg(ang, foundPOIArray[i].toString() + " " + distance + "m", elevationListArray.get(i), referenceNumArray.get(i));
                                 }
 
                             }

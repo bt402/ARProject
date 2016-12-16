@@ -23,6 +23,7 @@ import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -67,9 +68,6 @@ public class OverlayView extends View implements SensorEventListener,
     private Sensor compassSensor;
     private Sensor gyroSensor;
 
-    private TextPaint contentPaint;
-    private Paint targetPaint;
-
     public OverlayView(Context context) {
         super(context);
         this.context = context;
@@ -92,17 +90,6 @@ public class OverlayView extends View implements SensorEventListener,
         verticalFOV = params.getVerticalViewAngle();
         horizontalFOV = params.getHorizontalViewAngle();
         camera.release();
-
-        // paint for text
-        contentPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
-        contentPaint.setTextAlign(Align.LEFT);
-        contentPaint.setTextSize(30);
-        contentPaint.setColor(Color.RED);
-
-        // paint for target
-
-        targetPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        targetPaint.setColor(Color.GREEN);
 
     }
 
@@ -211,19 +198,23 @@ public class OverlayView extends View implements SensorEventListener,
                 Paint boxPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
                 boxPaint.setAlpha(85);
 
+                // >> 1 is equivelant to /2
 
-                Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-                textPaint.setColor(Color.WHITE);
-                // originally 40
-                textPaint.setTextSize(20);
-                textPaint.setTextAlign(Align.LEFT);
-
-
+                TextView textView = new TextView(context);
+                textView.setText(directionPOIs.get(i));
+                textView.setTextColor(Color.WHITE);
+                textView.setDrawingCacheEnabled(true);
+                textView.setTextSize(11);
+                textView.setWidth(270);
+                textView.setHeight(185);
+                textView.setSingleLine(false);
+                textView.layout(0, 0, 270, 185);
                 // draw our point -- we've rotated and translated this to the right spot already
-                canvas.drawBitmap(scaledbmp, canvas.getWidth()/2, canvas.getHeight()/2, boxPaint);
-                canvas.drawText(directionPOIs.get(i), canvas.getWidth()/2 + 20, canvas.getHeight()/2 + 40, textPaint);
+                canvas.drawBitmap(scaledbmp, canvas.getWidth()>> 1 , (canvas.getHeight()>> 1) , boxPaint);
+                canvas.drawBitmap(textView.getDrawingCache(), (canvas.getWidth()>> 1) + 20, (canvas.getWidth()>> 1) + 330, null);
+                //canvas.drawText(directionPOIs.get(i), (canvas.getWidth()>> 1) + 20, (canvas.getHeight()>> 1)  + 40, textPaint);
                 //canvas.drawCircle(canvas.getWidth()/2, canvas.getHeight()/2, 18.0f, targetPaint);
-
+                textView.setDrawingCacheEnabled(false);
                 canvas.restore();
 
             }

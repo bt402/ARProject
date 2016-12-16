@@ -17,6 +17,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -35,6 +36,9 @@ public class GoogleElevation {
 
         try {
 
+            // use BigDecimal in order to get rid of scientific notation e.g. 9.1694E-4
+            longitude = Double.parseDouble(""+new BigDecimal((longitude)));
+            latitude = Double.parseDouble(""+new BigDecimal((latitude)));
             HttpRequestFactory httpRequestFactory = createRequestFactory(HTTP_TRANSPORT);
             HttpRequest request = httpRequestFactory
                     .buildGetRequest(new GenericUrl(ELEVATION_SEARCH_URL));
