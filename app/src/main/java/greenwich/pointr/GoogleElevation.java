@@ -37,6 +37,7 @@ public class GoogleElevation {
         try {
 
             // use BigDecimal in order to get rid of scientific notation e.g. 9.1694E-4
+            String test = String.format("%.8f", latitude);
             longitude = Double.parseDouble(""+longitude);
             latitude = Double.parseDouble(""+latitude);
             HttpRequestFactory httpRequestFactory = createRequestFactory(HTTP_TRANSPORT);

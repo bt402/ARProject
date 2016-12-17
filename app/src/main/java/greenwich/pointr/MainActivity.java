@@ -45,7 +45,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     public static LinkedHashSet<String> foundPOIs;
     public static ArrayList<String> foundLoc;
     public static ArrayList<String> directionPOIs;
-    LinkedHashSet<String> referenceNum;
+    public static LinkedHashSet<String> referenceNum;
 
     // Information boxes components
     // Use to remove the redundant box of screen
@@ -82,6 +82,11 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     ImageView shuffleImg;
 
     private OverlayView arContent;
+
+    public static double getMyElevation() {
+        return myElevation;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

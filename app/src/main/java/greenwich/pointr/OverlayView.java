@@ -1,12 +1,9 @@
 package greenwich.pointr;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Paint.Align;
 import android.hardware.Camera;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -18,11 +15,9 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.Layout;
-import android.text.StaticLayout;
-import android.text.TextPaint;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -127,103 +122,136 @@ public class OverlayView extends View implements SensorEventListener,
 
         ArrayList<String> foundLoc = MainActivity.foundLoc; // lat, lon
         ArrayList<String> directionPOIs = MainActivity.directionPOIs; // name + distance  USE THIS
+        LinkedHashSet<String> referenceList = MainActivity.referenceNum;
 
-        if (directionPOIs != null && foundLoc != null){
-            if (directionPOIs.size() > 0){
+        if (directionPOIs != null && foundLoc != null) {
+            if (directionPOIs.size() > 0) {
 
-        for (int i = 0; i < directionPOIs.size(); i++){
+                ArrayList<Double> elevationListArray = new ArrayList<>(GoogleElevation.elevationList);
 
-        // Draw something fixed (for now) over the camera view
-        float currentBearing = 0.0f;
+                if (elevationListArray.size() > 0) {
 
-            Location location = new Location("manual");
+                    for (int i = 0; i < directionPOIs.size(); i++) {
 
-            String[] dis = foundLoc.get(i).split(" ");
-            double poiLat = Double.parseDouble(dis[0]);
-            double poiLon = Double.parseDouble(dis[1]);
+                        // Draw something fixed (for now) over the camera view
+                        float currentBearing = 0.0f;
 
-            location.setLatitude(poiLat);
-            location.setLongitude(poiLon);
+                        Location location = new Location("manual");
 
-        if (lastLocation != null) {
-            currentBearing = lastLocation.bearingTo(location);
-        }
+                        String[] dis = foundLoc.get(i).split(" ");
+                        double poiLat = Double.parseDouble(dis[0]);
+                        double poiLon = Double.parseDouble(dis[1]);
 
-        // compute rotation matrix
-        float rotation[] = new float[9];
-        float identity[] = new float[9];
-        if (lastAccelerometer != null && lastCompass != null) {
-            boolean gotRotation = SensorManager.getRotationMatrix(rotation,
-                    identity, lastAccelerometer, lastCompass);
-            if (gotRotation) {
-                float cameraRotation[] = new float[9];
-                // remap such that the camera is pointing straight down the Y
-                // axis
-                SensorManager.remapCoordinateSystem(rotation,
-                        SensorManager.AXIS_X, SensorManager.AXIS_Z,
-                        cameraRotation);
+                        location.setLatitude(poiLat);
+                        location.setLongitude(poiLon);
 
-                // orientation vector
-                float orientation[] = new float[3];
-                SensorManager.getOrientation(cameraRotation, orientation);
+                        if (lastLocation != null) {
+                            currentBearing = lastLocation.bearingTo(location);
+                        }
 
-                // draw horizon line (a nice sanity check piece) and the target (if it's on the screen)
-                canvas.save();
-                // use roll for screen rotation
-                canvas.rotate((float)(0.0f- Math.toDegrees(orientation[2])));
+                        // compute rotation matrix
+                        float rotation[] = new float[9];
+                        float identity[] = new float[9];
+                        if (lastAccelerometer != null && lastCompass != null) {
+                            boolean gotRotation = SensorManager.getRotationMatrix(rotation,
+                                    identity, lastAccelerometer, lastCompass);
+                            if (gotRotation) {
+                                float cameraRotation[] = new float[9];
+                                // remap such that the camera is pointing straight down the Y
+                                // axis
+                                SensorManager.remapCoordinateSystem(rotation,
+                                        SensorManager.AXIS_X, SensorManager.AXIS_Z,
+                                        cameraRotation);
 
-                // Translate, but normalize for the FOV of the camera -- basically, pixels per degree, times degrees == pixels
-                float dx = (float) ((canvas.getWidth()/ horizontalFOV) * (Math.toDegrees(orientation[0])-currentBearing));
-                float dy = (float) ((canvas.getHeight()/ verticalFOV) * Math.toDegrees(orientation[1])) ;
+                                // orientation vector
+                                float orientation[] = new float[3];
+                                SensorManager.getOrientation(cameraRotation, orientation);
 
-                // wait to translate the dx so the horizon doesn't get pushed off
-                canvas.translate(0.0f, 0.0f-dy);
+                                // draw horizon line (a nice sanity check piece) and the target (if it's on the screen)
+                                canvas.save();
+                                // use roll for screen rotation
+                                canvas.rotate((float) (0.0f - Math.toDegrees(orientation[2])));
+
+                                // Translate, but normalize for the FOV of the camera -- basically, pixels per degree, times degrees == pixels
+                                float dx = (float) ((canvas.getWidth() / horizontalFOV) * (Math.toDegrees(orientation[0]) - currentBearing));
+                                float dy = (float) ((canvas.getHeight() / verticalFOV) * Math.toDegrees(orientation[1]));
+
+                                // wait to translate the dx so the horizon doesn't get pushed off
+                                canvas.translate(0.0f, 0.0f - dy);
 
 
-                // make our line big enough to draw regardless of rotation and translation
-                //canvas.drawLine(0f - canvas.getHeight(), canvas.getHeight()/2, canvas.getWidth()+canvas.getHeight(), canvas.getHeight()/2, targetPaint);
+                                // make our line big enough to draw regardless of rotation and translation
+                                //canvas.drawLine(0f - canvas.getHeight(), canvas.getHeight()/2, canvas.getWidth()+canvas.getHeight(), canvas.getHeight()/2, targetPaint);
 
-                // now translate the dx
-                canvas.translate(0.0f-dx, 0.0f);
+                                // now translate the dx
+                                canvas.translate(0.0f - dx, 0.0f);
 
-                Bitmap bmpOrg = BitmapFactory.decodeResource(getResources(), R.drawable.frame);
-                bmpOrg.setHasAlpha(true);
-                int width = (int)(bmpOrg.getWidth() * 0.4f);
-                int height = (int)(bmpOrg.getHeight() * 0.3f);
+                                ImageView img = new ImageView(context);
+                                img.setBackgroundResource(R.drawable.frame);
+                                img.setDrawingCacheEnabled(true);
+                                img.setScaleX(0.4f);
+                                img.setScaleY(0.3f);
+                                img.setAlpha(0.5f);
+                                img.layout(0, 0, 270, 185);
 
-                // Scale the image to 30% of height and 40% of width
-                Bitmap scaledbmp;
-                scaledbmp = bmpOrg.createScaledBitmap(bmpOrg, width, height, true);
+                                //Bitmap bmpOrg = BitmapFactory.decodeResource(getResources(), R.drawable.frame);
+                                //bmpOrg.setHasAlpha(true);
+                                //int width = (int)(bmpOrg.getWidth() * 0.4f);
+                                //int height = (int)(bmpOrg.getHeight() * 0.3f);
 
-                Paint boxPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-                boxPaint.setAlpha(85);
+                                // Scale the image to 30% of height and 40% of width
+                                //Bitmap scaledbmp;
+                                //scaledbmp = bmpOrg.createScaledBitmap(bmpOrg, width, height, true);
 
-                // >> 1 is equivelant to /2
+                                Paint boxPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+                                boxPaint.setAlpha(85);
 
-                TextView textView = new TextView(context);
-                textView.setText(directionPOIs.get(i));
-                textView.setTextColor(Color.WHITE);
-                textView.setDrawingCacheEnabled(true);
-                textView.setTextSize(11);
-                textView.setWidth(270);
-                textView.setHeight(185);
-                textView.setSingleLine(false);
-                textView.layout(0, 0, 270, 185);
-                // draw our point -- we've rotated and translated this to the right spot already
-                canvas.drawBitmap(scaledbmp, canvas.getWidth()>> 1 , (canvas.getHeight()>> 1) , boxPaint);
-                canvas.drawBitmap(textView.getDrawingCache(), (canvas.getWidth()>> 1) + 20, (canvas.getWidth()>> 1) + 330, null);
-                //canvas.drawText(directionPOIs.get(i), (canvas.getWidth()>> 1) + 20, (canvas.getHeight()>> 1)  + 40, textPaint);
-                //canvas.drawCircle(canvas.getWidth()/2, canvas.getHeight()/2, 18.0f, targetPaint);
-                textView.setDrawingCacheEnabled(false);
-                canvas.restore();
+                                // >> 1 is equivelant to /2
 
-            }
-        }
+                                TextView textView = new TextView(context);
+                                textView.setText(directionPOIs.get(i));
+                                textView.setTextColor(Color.WHITE);
+                                textView.setDrawingCacheEnabled(true);
+                                textView.setTextSize(11);
+                                textView.setWidth(270);
+                                textView.setHeight(185);
+                                textView.setSingleLine(false);
+                                textView.layout(0, 0, 270, 185);
 
-        canvas.save();
-        canvas.translate(15.0f, 15.0f);
-        canvas.restore();
+                                int height = this.getHeight();
 
+
+                                double elev = elevationListArray.get(i) - MainActivity.getMyElevation();
+                                double elevPercentage = elev / MainActivity.getMyElevation();
+
+
+                                int yPos = (int) Math.round(height * elevPercentage);
+
+                                int middleY = (int) height >> 1;
+
+                                if (yPos < 0) {
+                                    yPos = middleY - Math.abs(yPos);
+                                } else {
+                                    yPos = middleY + yPos;
+                                }
+
+                                // draw our point -- we've rotated and translated this to the right spot already
+                                canvas.drawBitmap(img.getDrawingCache(), canvas.getWidth() >> 1, yPos, boxPaint);
+                                canvas.drawBitmap(textView.getDrawingCache(), (canvas.getWidth() >> 1) + 20, yPos, null);
+                                //canvas.drawText(directionPOIs.get(i), (canvas.getWidth()>> 1) + 20, (canvas.getHeight()>> 1)  + 40, textPaint);
+                                //canvas.drawCircle(canvas.getWidth()/2, canvas.getHeight()/2, 18.0f, targetPaint);
+                                img.setDrawingCacheEnabled(false);
+                                textView.setDrawingCacheEnabled(false);
+                                canvas.restore();
+
+                            }
+                        }
+
+                        canvas.save();
+                        canvas.translate(15.0f, 15.0f);
+                        canvas.restore();
+
+                    }
                 }
             }
         }
