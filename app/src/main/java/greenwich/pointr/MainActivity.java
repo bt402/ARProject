@@ -202,12 +202,18 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
 
         FrameLayout arViewPane = (FrameLayout) findViewById(R.id.mySurfaceView);
 
-        // public void addImg(double angle, String text, double elevation, final String reference)
-        // //addImg(ang, foundPOIArray[i].toString() + " " + distance + "m", elevationListArray.get(i), referenceNumArray.get(i));
         arContent = new OverlayView(getApplicationContext());
         arViewPane.addView(arContent);
 
+        ImageView img = new ImageView(MainActivity.this);
+        img.setBackgroundResource(R.drawable.frame);
+        img.setScaleX(0.4f);
+        img.setScaleY(0.3f);
+        img.setX(540);
+        img.setY(85);
+        img.setAlpha(0.5f);
     }
+
 /*
     public void addImg(double angle, String text, double elevation, final String reference){
         RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.myRelativeLayout);

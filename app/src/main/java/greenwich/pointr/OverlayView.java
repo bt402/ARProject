@@ -1,6 +1,7 @@
 package greenwich.pointr;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -16,12 +17,20 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.view.View.OnTouchListener;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
+
+import static greenwich.pointr.MainActivity.KEY_REFERENCE;
+import static greenwich.pointr.MainActivity.directionPOIs;
+import static greenwich.pointr.MainActivity.referenceNum;
 
 // https://code.tutsplus.com/tutorials/android-sdk-augmented-reality-camera-sensor-setup--mobile-7873
 
@@ -62,6 +71,9 @@ public class OverlayView extends View implements SensorEventListener,
     private Sensor accelSensor;
     private Sensor compassSensor;
     private Sensor gyroSensor;
+
+    ArrayList<Double> positionsX;
+    ArrayList<Double> positionY;
 
     public OverlayView(Context context) {
         super(context);
@@ -115,6 +127,8 @@ public class OverlayView extends View implements SensorEventListener,
         catch (SecurityException se){}
     }
 
+    Object[] referenceArray;
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -122,16 +136,28 @@ public class OverlayView extends View implements SensorEventListener,
 
         ArrayList<String> foundLoc = MainActivity.foundLoc; // lat, lon
         ArrayList<String> directionPOIs = MainActivity.directionPOIs; // name + distance  USE THIS
-        LinkedHashSet<String> referenceList = MainActivity.referenceNum;
+        final LinkedHashSet<String> referenceList = MainActivity.referenceNum;
 
         if (directionPOIs != null && foundLoc != null) {
             if (directionPOIs.size() > 0) {
 
                 ArrayList<Double> elevationListArray = new ArrayList<>(GoogleElevation.elevationList);
+                positionsX = new ArrayList<>();
+                positionY = new ArrayList<>();
 
+                referenceArray = referenceList.toArray();
                 if (elevationListArray.size() > 0) {
 
-                    for (int i = 0; i < directionPOIs.size(); i++) {
+                    int size = 0;
+
+                    if (directionPOIs.size() > elevationListArray.size()){
+                        size = elevationListArray.size();
+                    }
+                    else if (elevationListArray.size() > directionPOIs.size()){
+                        size = directionPOIs.size();
+                    }
+
+                    for (int i = 0; i < size; i++) {
 
                         // Draw something fixed (for now) over the camera view
                         float currentBearing = 0.0f;
@@ -179,10 +205,6 @@ public class OverlayView extends View implements SensorEventListener,
                                 // wait to translate the dx so the horizon doesn't get pushed off
                                 canvas.translate(0.0f, 0.0f - dy);
 
-
-                                // make our line big enough to draw regardless of rotation and translation
-                                //canvas.drawLine(0f - canvas.getHeight(), canvas.getHeight()/2, canvas.getWidth()+canvas.getHeight(), canvas.getHeight()/2, targetPaint);
-
                                 // now translate the dx
                                 canvas.translate(0.0f - dx, 0.0f);
 
@@ -194,14 +216,18 @@ public class OverlayView extends View implements SensorEventListener,
                                 img.setAlpha(0.5f);
                                 img.layout(0, 0, 270, 185);
 
-                                //Bitmap bmpOrg = BitmapFactory.decodeResource(getResources(), R.drawable.frame);
-                                //bmpOrg.setHasAlpha(true);
-                                //int width = (int)(bmpOrg.getWidth() * 0.4f);
-                                //int height = (int)(bmpOrg.getHeight() * 0.3f);
-
-                                // Scale the image to 30% of height and 40% of width
-                                //Bitmap scaledbmp;
-                                //scaledbmp = bmpOrg.createScaledBitmap(bmpOrg, width, height, true);
+                                img.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        // Starting new intent
+                                        Intent in = new Intent(getContext(),
+                                                PlaceInfo.class);
+                                        // Sending place refrence id to single place activity
+                                        // place refrence id used to get "Place full details"
+                                        in.putExtra(KEY_REFERENCE, "");
+                                        getContext().startActivity(in);
+                                    }
+                                });
 
                                 Paint boxPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
                                 boxPaint.setAlpha(85);
@@ -236,10 +262,14 @@ public class OverlayView extends View implements SensorEventListener,
                                 }
 
                                 // draw our point -- we've rotated and translated this to the right spot already
+
+                                System.out.println(directionPOIs.get(i) + " --> Position X: " + Math.abs(dx) + " Postion Y: " + Math.abs(dy));
+
+                                positionsX.add((double)Math.abs(dx));
+                                positionY.add((double)Math.abs(dy));
+
                                 canvas.drawBitmap(img.getDrawingCache(), canvas.getWidth() >> 1, yPos, boxPaint);
                                 canvas.drawBitmap(textView.getDrawingCache(), (canvas.getWidth() >> 1) + 20, yPos, null);
-                                //canvas.drawText(directionPOIs.get(i), (canvas.getWidth()>> 1) + 20, (canvas.getHeight()>> 1)  + 40, textPaint);
-                                //canvas.drawCircle(canvas.getWidth()/2, canvas.getHeight()/2, 18.0f, targetPaint);
                                 img.setDrawingCacheEnabled(false);
                                 textView.setDrawingCacheEnabled(false);
                                 canvas.restore();
@@ -255,6 +285,26 @@ public class OverlayView extends View implements SensorEventListener,
                 }
             }
         }
+    }
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        // 540, 1090
+
+        //if (event.getX() >= 540 && event.getX() <= 640 && event.getY() >= 1090 && event.getY() <= 1190){
+        if (positionsX.size() == positionY.size()){
+            for (int i = 0; i < positionsX.size(); i++){
+                if (event.getX() >= positionsX.get(i) && event.getX() <= positionsX.get(i) + 270
+                        && event.getY() >= positionY.get(i) && event.getY() <= positionY.get(i) + 185){
+                    Toast toast = Toast.makeText(context, "message", Toast.LENGTH_LONG);
+                    toast.setGravity(Gravity.BOTTOM, 0, 0);
+                    toast.setDuration(Toast.LENGTH_LONG);
+                    toast.setText(directionPOIs.get(i));
+                    toast.show();
+                }
+            }
+        }
+        //}
+        return false;
     }
 
     public void onAccuracyChanged(Sensor arg0, int arg1) {
@@ -319,4 +369,5 @@ public class OverlayView extends View implements SensorEventListener,
         startSensors();
         startGPS();
     }
+
 }
