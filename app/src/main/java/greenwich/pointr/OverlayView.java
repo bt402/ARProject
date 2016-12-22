@@ -127,7 +127,7 @@ public class OverlayView extends View implements SensorEventListener,
         catch (SecurityException se){}
     }
 
-    Object[] referenceArray;
+    Object[] referenceArray = new Object[20];
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -142,6 +142,7 @@ public class OverlayView extends View implements SensorEventListener,
             if (directionPOIs.size() > 0) {
 
                 ArrayList<Double> elevationListArray = new ArrayList<>(GoogleElevation.elevationList);
+                referenceList.toArray(referenceArray);
                 positionsX = new ArrayList<>();
                 positionY = new ArrayList<>();
 
@@ -265,8 +266,8 @@ public class OverlayView extends View implements SensorEventListener,
 
                                 System.out.println(directionPOIs.get(i) + " --> Position X: " + Math.abs(dx) + " Postion Y: " + Math.abs(dy));
 
-                                positionsX.add((double)Math.abs(dx));
-                                positionY.add((double)Math.abs(dy));
+                                positionsX.add((double)dx);
+                                positionY.add((double)dy);
 
                                 canvas.drawBitmap(img.getDrawingCache(), canvas.getWidth() >> 1, yPos, boxPaint);
                                 canvas.drawBitmap(textView.getDrawingCache(), (canvas.getWidth() >> 1) + 20, yPos, null);
@@ -293,13 +294,21 @@ public class OverlayView extends View implements SensorEventListener,
         //if (event.getX() >= 540 && event.getX() <= 640 && event.getY() >= 1090 && event.getY() <= 1190){
         if (positionsX.size() == positionY.size()){
             for (int i = 0; i < positionsX.size(); i++){
-                if (event.getX() >= positionsX.get(i) && event.getX() <= positionsX.get(i) + 270
-                        && event.getY() >= positionY.get(i) && event.getY() <= positionY.get(i) + 185){
+                if (event.getX() >= Math.abs(positionsX.get(i)) && event.getX() <= Math.abs(positionsX.get(i)) + 320
+                        && event.getY() >= Math.abs(positionY.get(i)) && event.getY() <= Math.abs(positionY.get(i)) + 235){
                     Toast toast = Toast.makeText(context, "message", Toast.LENGTH_LONG);
                     toast.setGravity(Gravity.BOTTOM, 0, 0);
                     toast.setDuration(Toast.LENGTH_LONG);
                     toast.setText(directionPOIs.get(i));
                     toast.show();
+                    // Starting new intent
+                    Intent in = new Intent(getContext(),
+                            PlaceInfo.class);
+                    // Sending place refrence id to single place activity
+                    // place refrence id used to get "Place full details"
+                    in.putExtra(KEY_REFERENCE, (String)referenceArray[i]);
+                    in.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    getContext().startActivity(in);
                 }
             }
         }

@@ -16,6 +16,7 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.os.Bundle;
 import android.view.Display;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -24,6 +25,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
@@ -205,13 +207,79 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         arContent = new OverlayView(getApplicationContext());
         arViewPane.addView(arContent);
 
-        ImageView img = new ImageView(MainActivity.this);
-        img.setBackgroundResource(R.drawable.frame);
-        img.setScaleX(0.4f);
-        img.setScaleY(0.3f);
-        img.setX(540);
-        img.setY(85);
-        img.setAlpha(0.5f);
+
+        //GSM.setColorFilter(Color.parseColor("#FF3F51B5"));
+
+        final ImageButton GSM = (ImageButton) findViewById(R.id.gsmBtn);
+        GSM.setImageResource(R.drawable.gsm);
+        GSM.setScaleX(0.3f);
+        GSM.setScaleY(0.3f);
+        GSM.setY((height-256) - 336);
+
+        final ImageButton WIFI = (ImageButton) findViewById(R.id.wifiBtn);
+        WIFI.setImageResource(R.drawable.wifi);
+        WIFI.setScaleY(0.3f);
+        WIFI.setScaleX(0.3f);
+        WIFI.setX(GSM.getX() + 150);
+        WIFI.setY((height-256) - 336);
+
+        final ImageButton GPS = (ImageButton) findViewById(R.id.gpsBtn);
+        GPS.setImageResource(R.drawable.gps);
+        GPS.setScaleX(0.2f);
+        GPS.setScaleY(0.2f);
+        GPS.setX((WIFI.getX()) + 150);
+        GPS.setY((height - 256) - 336);
+
+
+        GSM.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                GSM.setColorFilter(Color.parseColor("#FF3F51B5"));
+                WIFI.setColorFilter(Color.parseColor("#FFFFFF"));
+                GPS.setColorFilter(Color.parseColor("#FFFFFF"));
+                setLocation("network");
+
+                Toast toast = Toast.makeText(getApplicationContext(), "message", Toast.LENGTH_LONG);
+                toast.setGravity(Gravity.CENTER, 0, 0);
+                toast.setDuration(Toast.LENGTH_LONG);
+                toast.setText("GSM location: "+bestLocation);
+                toast.show();
+
+            }
+        });
+
+        WIFI.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                WIFI.setColorFilter(Color.parseColor("#FF3F51B5"));
+                GSM.setColorFilter(Color.parseColor("#FFFFFF"));
+                GPS.setColorFilter(Color.parseColor("#FFFFFF"));
+                setLocation("passive");
+
+                Toast toast = Toast.makeText(getApplicationContext(), "message", Toast.LENGTH_LONG);
+                toast.setGravity(Gravity.CENTER, 0, 0);
+                toast.setDuration(Toast.LENGTH_LONG);
+                toast.setText("WiFi location: "+bestLocation);
+                toast.show();
+            }
+        });
+
+        GPS.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                GPS.setColorFilter(Color.parseColor("#FF3F51B5"));
+                WIFI.setColorFilter(Color.parseColor("#FFFFFF"));
+                GSM.setColorFilter(Color.parseColor("#FFFFFF"));
+                setLocation("gps");
+
+                Toast toast = Toast.makeText(getApplicationContext(), "message", Toast.LENGTH_LONG);
+                toast.setGravity(Gravity.CENTER, 0, 0);
+                toast.setDuration(Toast.LENGTH_LONG);
+                toast.setText("GPS location: "+bestLocation);
+                toast.show();
+            }
+        });
+
     }
 
 /*
@@ -553,26 +621,34 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         double dist = planetRadius * c;
         return Math.round(dist * 1000);
     }
+    Location bestLocation = null;
+    private void setLocation(String location){
+        try {
+            bestLocation = mLocationManager.getLastKnownLocation(location);
+        }
+        catch (SecurityException se){}
+    }
 
     private Location getLocation(){
         // http://stackoverflow.com/questions/20438627/getlastknownlocation-returns-null
         mLocationManager = (LocationManager)getApplicationContext().getSystemService(LOCATION_SERVICE);
         List<String> providers = mLocationManager.getProviders(true);
-        Location bestLocation = null;
-        Location l = null;
-        for (String provider : providers) {
-            try {
-                l = mLocationManager.getLastKnownLocation(provider);
-            }
-            catch (SecurityException se){}
-            if (l == null) {
-                continue;
-            }
-            if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
-                // Found best last known location: %s", l);
-                bestLocation = l;
-            }
-        }
+       if (bestLocation == null) {
+           Location l = null;
+           for (String provider : providers) {
+               try {
+                   l = mLocationManager.getLastKnownLocation(provider);
+               } catch (SecurityException se) {
+               }
+               if (l == null) {
+                   continue;
+               }
+               if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
+                   // Found best last known location: %s", l);
+                   bestLocation = l;
+               }
+           }
+       }
         return bestLocation;
     }
 
