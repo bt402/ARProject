@@ -13,6 +13,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.os.Bundle;
 import android.view.Display;
@@ -30,6 +31,10 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -239,12 +244,20 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                 GPS.setColorFilter(Color.parseColor("#FFFFFF"));
                 setLocation("network");
 
+                loadPlaces = new LoadPlaces();
+                loadPlaces.execute(radius);
+
                 Toast toast = Toast.makeText(getApplicationContext(), "message", Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.setDuration(Toast.LENGTH_LONG);
                 toast.setText("GSM location: "+bestLocation);
                 toast.show();
 
+                try {
+                    recordData("GSMData");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -256,11 +269,20 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                 GPS.setColorFilter(Color.parseColor("#FFFFFF"));
                 setLocation("passive");
 
+                loadPlaces = new LoadPlaces();
+                loadPlaces.execute(radius);
+
                 Toast toast = Toast.makeText(getApplicationContext(), "message", Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.setDuration(Toast.LENGTH_LONG);
                 toast.setText("WiFi location: "+bestLocation);
                 toast.show();
+
+                try {
+                    recordData("WiFiData");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -272,11 +294,20 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                 GSM.setColorFilter(Color.parseColor("#FFFFFF"));
                 setLocation("gps");
 
+                loadPlaces = new LoadPlaces();
+                loadPlaces.execute(radius);
+
                 Toast toast = Toast.makeText(getApplicationContext(), "message", Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.setDuration(Toast.LENGTH_LONG);
                 toast.setText("GPS location: "+bestLocation);
                 toast.show();
+
+                try {
+                    recordData("GPSData");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -450,6 +481,25 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
 
     }
 
+    public void recordData(String fileName) throws IOException {
+        File file = new File(Environment.getExternalStorageDirectory() + File.separator + fileName + ".csv");
+        file.createNewFile();
+        if(file.exists())
+        {
+
+            if (directionPOIs.size() > 0) {
+
+                OutputStream fo = new FileOutputStream(file);
+                for (int i = 0; i < directionPOIs.size(); i++)
+                {
+                    String[] split = directionPOIs.get(i).split(" ");
+                    fo.write((split[0] + " , " + split[1] + "\r\n").getBytes());
+                }
+                fo.close();
+            }
+        }
+    }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -471,7 +521,12 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
 
         try{
             spinner.setVisibility(View.VISIBLE);
-            location = getLocation();
+            if (bestLocation != null){
+                location = bestLocation;
+            }
+            else {
+                location = getLocation();
+            }
             longitude = location.getLongitude();
             latitude = location.getLatitude();
         }
@@ -619,7 +674,8 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         double a = Math.pow(sindLat, 2) + Math.pow(sindLng, 2)* Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2));
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         double dist = planetRadius * c;
-        return Math.round(dist * 1000);
+        //return Math.round(dist * 1000);
+        return Double.parseDouble(String.format("%.2f", dist * 1000));
     }
     Location bestLocation = null;
     private void setLocation(String location){

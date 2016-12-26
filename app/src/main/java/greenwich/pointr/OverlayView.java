@@ -1,7 +1,9 @@
 package greenwich.pointr;
 
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -42,7 +44,6 @@ public class OverlayView extends View implements SensorEventListener,
     private final Context context;
     private Handler handler;
 
-    // Houses of Parliment: 51.4998418, -0.1245903, 96m (Big Ben)
     private final static Location westminsterPalace = new Location("manual");
     static {
         westminsterPalace.setLatitude(51.4998418);
@@ -111,9 +112,6 @@ public class OverlayView extends View implements SensorEventListener,
 
     private void startGPS() {
         Criteria criteria = new Criteria();
-        // criteria.setAccuracy(Criteria.ACCURACY_FINE);
-        // while we want fine accuracy, it's unlikely to work indoors where we
-        // do our testing. :)
         criteria.setAccuracy(Criteria.NO_REQUIREMENT);
         criteria.setPowerRequirement(Criteria.NO_REQUIREMENT);
 
@@ -264,7 +262,7 @@ public class OverlayView extends View implements SensorEventListener,
 
                                 // draw our point -- we've rotated and translated this to the right spot already
 
-                                System.out.println(directionPOIs.get(i) + " --> Position X: " + Math.abs(dx) + " Postion Y: " + Math.abs(dy));
+                                //System.out.println(directionPOIs.get(i) + " --> Position X: " + Math.abs(dx) + " Postion Y: " + Math.abs(dy));
 
                                 positionsX.add((double)dx);
                                 positionY.add((double)dy);
@@ -292,6 +290,7 @@ public class OverlayView extends View implements SensorEventListener,
         // 540, 1090
 
         //if (event.getX() >= 540 && event.getX() <= 640 && event.getY() >= 1090 && event.getY() <= 1190){
+        if (positionsX != null && positionY != null){
         if (positionsX.size() == positionY.size()){
             for (int i = 0; i < positionsX.size(); i++){
                 if (event.getX() >= Math.abs(positionsX.get(i)) && event.getX() <= Math.abs(positionsX.get(i)) + 320
@@ -311,6 +310,17 @@ public class OverlayView extends View implements SensorEventListener,
                     getContext().startActivity(in);
                 }
             }
+        }
+        }
+        else {
+            String radius;
+            SharedPreferences sharedPreferences = null;
+            sharedPreferences = getContext().getSharedPreferences("SettingsSave", 1);
+            String radiusState = sharedPreferences.getString("r", "1000");
+            String[] radiusStateString = radiusState.split(" ");
+            radius = radiusStateString[0];
+            MainActivity.LoadPlaces loadPlaces = new MainActivity().new LoadPlaces();
+            loadPlaces.execute(radius);
         }
         //}
         return false;
