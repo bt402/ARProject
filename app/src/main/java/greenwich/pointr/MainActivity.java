@@ -56,8 +56,8 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
 
     // Information boxes components
     // Use to remove the redundant box of screen
-    ArrayList<ImageView> imageList = new ArrayList<>();
-    ArrayList<TextView> textList = new ArrayList<>();
+    static ArrayList<ImageView> imageList = new ArrayList<>();
+    static ArrayList<TextView> textList = new ArrayList<>();
 
     // Google Places
     GooglePlaces googlePlaces;
@@ -169,7 +169,6 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        removeRedundantBoxes();
                         loadPlaces = new LoadPlaces();
                         loadPlaces.execute(radius);
                         shuffleBoxes();
@@ -183,7 +182,6 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         shuffleImg.setX((width / 2)-64);
         shuffleImg.setScaleX(0.9f);
         shuffleImg.setScaleY(0.9f);
-        shuffleImg.setVisibility(View.INVISIBLE);
         relativeLayout.addView(shuffleImg);
 
         // Handle uncaught exceptions and email me the log
@@ -313,7 +311,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
 
     }
 
-/*
+
     public void addImg(double angle, String text, double elevation, final String reference){
         RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.myRelativeLayout);
         ImageView img = new ImageView(MainActivity.this);
@@ -369,6 +367,10 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         int[] outLocation = new int[2];
         img.getLocationOnScreen(outLocation);
 
+
+        img.setVisibility(View.INVISIBLE);
+        txt.setVisibility(View.INVISIBLE);
+
         relativeLayout.addView(img);
         relativeLayout.addView(txt);
 
@@ -386,16 +388,8 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         });
 
 
-    }*/
-
-    public void removeRedundantBoxes(){
-        RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.myRelativeLayout);
-        shuffleImg.setVisibility(View.INVISIBLE);
-        for (int i = 0; i < imageList.size(); i++){
-            relativeLayout.removeView(imageList.get(i));
-            relativeLayout.removeView(textList.get(i));
-        }
     }
+
     LinkedHashSet<ImageView> overlapList = new LinkedHashSet<>();
     LinkedHashSet<TextView> overlapText = new LinkedHashSet<>();
 
@@ -465,11 +459,11 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                       System.out.println("Size of the list is: " + textList.size());
                       for(int counter = 0; counter < textList.size(); counter++) {
                           //if(overlapText.contains(textList.get(counter))) {
-                              imageList.get(indexIterator).bringToFront();
-                              imageList.get(indexIterator).setAlpha(1f);
-                              textList.get(indexIterator).bringToFront();
-                              textList.get(indexIterator).setAlpha(1f);
-                              textList.get(indexIterator).setTextColor(Color.rgb(71,74,209));
+                          imageList.get(indexIterator).bringToFront();
+                          imageList.get(indexIterator).setAlpha(1f);
+                          textList.get(indexIterator).bringToFront();
+                          textList.get(indexIterator).setAlpha(1f);
+                          textList.get(indexIterator).setTextColor(Color.rgb(71,74,209));
                          // }
                       }
                       indexIterator++;
@@ -490,10 +484,19 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
             if (directionPOIs.size() > 0) {
 
                 OutputStream fo = new FileOutputStream(file);
-                for (int i = 0; i < directionPOIs.size(); i++)
+
+                Object[] foundPOIArray = foundPOIs.toArray();
+
+                fo.write(("My location (lng, lat):, " + latitude + "," + longitude + "\r\n").getBytes());
+
+                for (int i = 0; i < foundPOIs.size(); i++)
                 {
-                    String[] split = directionPOIs.get(i).split(" ");
-                    fo.write((split[0] + " , " + split[1] + "\r\n").getBytes());
+                    // dis[0] = lat, dis[1] = long
+                    String[] dis = foundLoc.get(i).split(" ");
+                    double poiLat = Double.parseDouble(dis[0]);
+                    double poiLon = Double.parseDouble(dis[1]);
+                    String distance = ""+findDistance(longitude, latitude, poiLon, poiLat);
+                    fo.write((foundPOIArray[i].toString() + ", " + distance + "," + poiLat + "," + poiLon + "\r\n").getBytes());
                 }
                 fo.close();
             }
@@ -541,7 +544,6 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         directionPOIs = new ArrayList<String>();
         referenceNum = new LinkedHashSet<>();
         GooglePlaces.foundLoc = new ArrayList<>();
-        removeRedundantBoxes();
         new LoadMyElevation().execute();
         spinner.setVisibility(View.GONE);
         loadPlaces = new LoadPlaces();
@@ -828,7 +830,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                             if (inFOV(poiLat, poiLon, angle, (int)Double.parseDouble(radius))){
                                 if (!directionPOIs.contains(foundPOIArray[i].toString()) && elevationListArray.size() > 0){
                                     directionPOIs.add(foundPOIArray[i].toString() + " " + distance + "m");
-                                    //addImg(ang, foundPOIArray[i].toString() + " " + distance + "m", elevationListArray.get(i), referenceNumArray.get(i));
+                                    addImg(ang, foundPOIArray[i].toString() + " " + distance + "m", elevationListArray.get(i), referenceNumArray.get(i));
                                 }
 
                             }

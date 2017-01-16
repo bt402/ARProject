@@ -1,7 +1,6 @@
 package greenwich.pointr;
 
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Canvas;
@@ -24,7 +23,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.view.View.OnTouchListener;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -32,7 +30,7 @@ import java.util.LinkedHashSet;
 
 import static greenwich.pointr.MainActivity.KEY_REFERENCE;
 import static greenwich.pointr.MainActivity.directionPOIs;
-import static greenwich.pointr.MainActivity.referenceNum;
+import static greenwich.pointr.MainActivity.textList;
 
 // https://code.tutsplus.com/tutorials/android-sdk-augmented-reality-camera-sensor-setup--mobile-7873
 
@@ -75,6 +73,9 @@ public class OverlayView extends View implements SensorEventListener,
 
     ArrayList<Double> positionsX;
     ArrayList<Double> positionY;
+
+    ArrayList<ImageView> imageList = new ArrayList<>();
+    ArrayList<TextView> textList = new ArrayList<>();
 
     public OverlayView(Context context) {
         super(context);
@@ -144,6 +145,9 @@ public class OverlayView extends View implements SensorEventListener,
                 positionsX = new ArrayList<>();
                 positionY = new ArrayList<>();
 
+                imageList = MainActivity.imageList;
+                textList = MainActivity.textList;
+
                 referenceArray = referenceList.toArray();
                 if (elevationListArray.size() > 0) {
 
@@ -154,6 +158,10 @@ public class OverlayView extends View implements SensorEventListener,
                     }
                     else if (elevationListArray.size() > directionPOIs.size()){
                         size = directionPOIs.size();
+                    }
+
+                    if (size > imageList.size()){
+                        size = imageList.size() - 1;
                     }
 
                     for (int i = 0; i < size; i++) {
@@ -207,15 +215,22 @@ public class OverlayView extends View implements SensorEventListener,
                                 // now translate the dx
                                 canvas.translate(0.0f - dx, 0.0f);
 
-                                ImageView img = new ImageView(context);
+                                /*ImageView img = new ImageView(context);
                                 img.setBackgroundResource(R.drawable.frame);
                                 img.setDrawingCacheEnabled(true);
                                 img.setScaleX(0.4f);
                                 img.setScaleY(0.3f);
                                 img.setAlpha(0.5f);
-                                img.layout(0, 0, 270, 185);
+                                img.layout(0, 0, 270, 185);*/
 
-                                img.setOnClickListener(new View.OnClickListener() {
+                                imageList.get(i).setBackgroundResource(R.drawable.frame);
+                                imageList.get(i).setDrawingCacheEnabled(true);
+                                imageList.get(i).setScaleX(0.4f);
+                                imageList.get(i).setScaleY(0.3f);
+                                imageList.get(i).setAlpha(0.5f);
+                                imageList.get(i).layout(0, 0, 270, 185);
+
+                                imageList.get(i).setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View view) {
                                         // Starting new intent
@@ -233,7 +248,7 @@ public class OverlayView extends View implements SensorEventListener,
 
                                 // >> 1 is equivelant to /2
 
-                                TextView textView = new TextView(context);
+                                /*TextView textView = new TextView(context);
                                 textView.setText(directionPOIs.get(i));
                                 textView.setTextColor(Color.WHITE);
                                 textView.setDrawingCacheEnabled(true);
@@ -241,7 +256,17 @@ public class OverlayView extends View implements SensorEventListener,
                                 textView.setWidth(270);
                                 textView.setHeight(185);
                                 textView.setSingleLine(false);
-                                textView.layout(0, 0, 270, 185);
+                                textView.layout(0, 0, 270, 185);*/
+
+                                //textList.get(i).setTextColor(Color.WHITE);
+                                textList.get(i).setDrawingCacheEnabled(true);
+                                textList.get(i).setTextSize(11);
+                                textList.get(i).setWidth(270);
+                                textList.get(i).setHeight(185);
+                                textList.get(i).setSingleLine(false);
+                                textList.get(i).layout(0, 0, 270, 185);
+
+                                System.out.println("Added: " + textList.get(i).getText());
 
                                 int height = this.getHeight();
 
@@ -267,10 +292,10 @@ public class OverlayView extends View implements SensorEventListener,
                                 positionsX.add((double)dx);
                                 positionY.add((double)dy);
 
-                                canvas.drawBitmap(img.getDrawingCache(), canvas.getWidth() >> 1, yPos, boxPaint);
-                                canvas.drawBitmap(textView.getDrawingCache(), (canvas.getWidth() >> 1) + 20, yPos, null);
-                                img.setDrawingCacheEnabled(false);
-                                textView.setDrawingCacheEnabled(false);
+                                canvas.drawBitmap(imageList.get(i).getDrawingCache(), canvas.getWidth() >> 1, yPos, boxPaint);
+                                canvas.drawBitmap(textList.get(i).getDrawingCache(), (canvas.getWidth() >> 1) + 20, yPos, null);
+                                imageList.get(i).setDrawingCacheEnabled(false);
+                                textList.get(i).setDrawingCacheEnabled(false);
                                 canvas.restore();
 
                             }
@@ -285,6 +310,9 @@ public class OverlayView extends View implements SensorEventListener,
             }
         }
     }
+
+
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         // 540, 1090
