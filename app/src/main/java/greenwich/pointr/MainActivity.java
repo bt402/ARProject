@@ -367,13 +367,6 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         int[] outLocation = new int[2];
         img.getLocationOnScreen(outLocation);
 
-
-        img.setVisibility(View.INVISIBLE);
-        txt.setVisibility(View.INVISIBLE);
-
-        relativeLayout.addView(img);
-        relativeLayout.addView(txt);
-
         img.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

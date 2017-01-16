@@ -289,8 +289,10 @@ public class OverlayView extends View implements SensorEventListener,
 
                                 //System.out.println(directionPOIs.get(i) + " --> Position X: " + Math.abs(dx) + " Postion Y: " + Math.abs(dy));
 
-                                positionsX.add((double)dx);
-                                positionY.add((double)dy);
+                                double testXVal = imageList.get(i).getX();
+                                double textYVal = imageList.get(i).getY();
+                                positionsX.add((double)testXVal);
+                                positionY.add((double)textYVal);
 
                                 canvas.drawBitmap(imageList.get(i).getDrawingCache(), canvas.getWidth() >> 1, yPos, boxPaint);
                                 canvas.drawBitmap(textList.get(i).getDrawingCache(), (canvas.getWidth() >> 1) + 20, yPos, null);
