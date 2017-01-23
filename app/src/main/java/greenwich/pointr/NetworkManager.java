@@ -6,6 +6,13 @@ import android.net.NetworkInfo;
 import android.view.Gravity;
 import android.widget.Toast;
 
+/*
+ * To prevent application from crashing, use this class to check for internet connection
+ * If no internet connection is present, the application would not work and crash on MainActivity
+ * when trying to execute network related (Google Places) code.
+ * Checking for network connection on splash screen will allow to either continue with launch or
+ * it will stop the application and appropriate message will be displayed in the toast
+ */
 
 public class NetworkManager {
 

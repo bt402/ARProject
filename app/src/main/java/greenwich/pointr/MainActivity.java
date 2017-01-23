@@ -104,9 +104,6 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         // Check if Compass and/or Accelerometer are avaliable
         SensorDialog sensorDialog = new SensorDialog();
         sensorDialog.accelerometerExists(this);
-        // Check for network connection
-        NetworkManager networkManager = new NetworkManager();
-        networkManager.checkConnection(this);
 
         ImageButton settingsBtn = (ImageButton) findViewById(R.id.imageButton);
         ImageButton helpBtn = (ImageButton) findViewById(R.id.imageButton2);
@@ -589,9 +586,6 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
 
         TextView t = (TextView) findViewById(R.id.textView2);
         String directions[] = {"N", "NE", "E", "SE", "S", "SW", "W", "NW"};
-        // x axis = event.values[0]
-        // y axis = event.values[1]
-        // z axis = event.values[2]
         float orientation[];
 
         // Check if phone has got accelerometer and magnetometer
@@ -661,14 +655,14 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     }
 
     public static double findDistance(double lon1, double lat1, double lon2, double lat2) {
-        int planetRadius = 6371;
+        final int PLANET_RADIUS = 6371;
         double dLat = Math.toRadians(lat2 - lat1);
         double dLng = Math.toRadians(lon2 - lon1);
         double sindLat = Math.sin(dLat / 2);
         double sindLng = Math.sin(dLng / 2);
         double a = Math.pow(sindLat, 2) + Math.pow(sindLng, 2)* Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2));
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        double dist = planetRadius * c;
+        double dist = PLANET_RADIUS * c;
         //return Math.round(dist * 1000);
         return Double.parseDouble(String.format("%.2f", dist * 1000));
     }

@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.HashSet;
 
 public class OptionDialog extends DialogFragment{
-    String[] typesList = {"Place1", "Test", "Beer that way", "Pub", "Roman Bürki", "Swiss football"};
+    String[] typesList = {"Place1", "Test"}; // put some random values just for testing purposes
     ArrayList<Integer> mSelectedItems;
     String[] typeSelected;
     public void showOption(final Context context, final String name, final ToggleButton toggleButton, boolean isChecked){
@@ -25,7 +25,7 @@ public class OptionDialog extends DialogFragment{
         else {
             mSelectedItems = defaultValues(typesList.length, isChecked);
         }
-        boolean[] checkBoxes = new boolean[typesList.length];
+        boolean[] checkBoxes;
         checkBoxes = selectBoxes(mSelectedItems, typesList.length);
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         //boolean[] test = {true, true};

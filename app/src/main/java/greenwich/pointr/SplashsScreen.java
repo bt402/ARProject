@@ -11,6 +11,13 @@ import android.Manifest;
 import android.view.Gravity;
 import android.widget.Toast;
 
+/*
+ * Splash screen is a nice touch when waiting for application to launch.
+ * This class allow to check for internet connection before the MainActivity starts.
+ * Here the application also checks for permissions (Camera, Storage and Location).
+ * If not permissions are granted, the application will quit.
+ */
+
 public class SplashsScreen extends Activity {
 
     @Override
@@ -78,7 +85,7 @@ public class SplashsScreen extends Activity {
                     }, 1500);
                 } else {
 
-                    // permission denied, boo! Disable the
+                    // permission denied, disable the
                     // functionality that depends on this permission.
                     System.exit(0);
                 }

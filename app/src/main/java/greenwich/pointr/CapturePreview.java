@@ -2,16 +2,18 @@ package greenwich.pointr;
 
 import android.content.Context;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.hardware.Camera;
 
+/*
+ * To implement Augmented Reality use this class for accessing the camera
+ * The camera will be overlayed over the MainActivity
+ */
+
 public class CapturePreview extends SurfaceView implements SurfaceHolder.Callback{
 
-    public static Bitmap mBitmap;
     SurfaceHolder holder;
     static Camera mCamera;
 
@@ -28,6 +30,7 @@ public class CapturePreview extends SurfaceView implements SurfaceHolder.Callbac
 
         Camera.Parameters parameters = mCamera.getParameters();
         parameters.getSupportedPreviewSizes();
+        // Phone rotated to portrait, by 90 degrees to left
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
         {
             mCamera.setDisplayOrientation(90);
@@ -49,22 +52,5 @@ public class CapturePreview extends SurfaceView implements SurfaceHolder.Callbac
     public void surfaceDestroyed(SurfaceHolder holder) {
         mCamera.stopPreview();
         mCamera.release();
-    }
-    /***
-     *
-     *  Take a picture and and convert it from bytes[] to Bitmap.
-     *
-     */
-    public static void takeAPicture(){
-
-        Camera.PictureCallback mPictureCallback = new Camera.PictureCallback() {
-            @Override
-            public void onPictureTaken(byte[] data, Camera camera) {
-
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                mBitmap = BitmapFactory.decodeByteArray(data, 0, data.length, options);
-            }
-        };
-        mCamera.takePicture(null, null, mPictureCallback);
     }
 }

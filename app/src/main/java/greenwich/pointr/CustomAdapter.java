@@ -9,8 +9,12 @@ import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.ToggleButton;
-
 import java.util.ArrayList;
+
+/*
+ * Using custom adapter will allow to create a custom made menu
+ * This adapter will be used for settings, where the rows will be consecutively changed in colour
+ */
 
 public class CustomAdapter extends ArrayAdapter {
     Model[] modelItems = null;

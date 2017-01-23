@@ -9,6 +9,7 @@ public class SettingsDialogError extends DialogFragment {
 
     public void emptyList(Context context){
 
+        // Don't allow the user to have an empty choice when exiting settings page
             new AlertDialog.Builder(context)
                     .setTitle("Invalid Selection")
                     .setMessage("Please select at least one category")

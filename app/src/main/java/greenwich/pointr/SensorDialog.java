@@ -6,6 +6,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 
+/*
+ * Use this class to determine if the phone has got minimal hardware for the application to run
+ * The application requires at least accelerometer and the compass to determine where the phone is pointing
+ * Ideally the phone has accelerometer and gravitometer for best accuracy, but compass can be used instead
+ */
+
 public class SensorDialog extends DialogFragment{
 
     // Retrieve information about device
@@ -19,6 +25,7 @@ public class SensorDialog extends DialogFragment{
         accelerometer = manager.hasSystemFeature(PackageManager.FEATURE_SENSOR_ACCELEROMETER);
         compass = manager.hasSystemFeature(PackageManager.FEATURE_SENSOR_COMPASS);
 
+        // Alert the user that the device is unsupported
         if (!accelerometer || !compass){
             new AlertDialog.Builder(context)
                     .setTitle("Critical Alert")

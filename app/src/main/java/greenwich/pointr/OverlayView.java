@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.hardware.Camera;
 import android.hardware.Sensor;
@@ -30,7 +29,6 @@ import java.util.LinkedHashSet;
 
 import static greenwich.pointr.MainActivity.KEY_REFERENCE;
 import static greenwich.pointr.MainActivity.directionPOIs;
-import static greenwich.pointr.MainActivity.textList;
 
 // https://code.tutsplus.com/tutorials/android-sdk-augmented-reality-camera-sensor-setup--mobile-7873
 
@@ -289,8 +287,8 @@ public class OverlayView extends View implements SensorEventListener,
 
                                 //System.out.println(directionPOIs.get(i) + " --> Position X: " + Math.abs(dx) + " Postion Y: " + Math.abs(dy));
 
-                                double testXVal = imageList.get(i).getX();
-                                double textYVal = imageList.get(i).getY();
+                                double testXVal = imageList.get(i).getX() + 270;
+                                double textYVal = imageList.get(i).getY() + 185;
                                 positionsX.add((double)testXVal);
                                 positionY.add((double)textYVal);
 
