@@ -39,14 +39,7 @@ public class OverlayView extends View implements SensorEventListener,
 
     private final Context context;
     private Handler handler;
-
-    private final static Location westminsterPalace = new Location("manual");
-    static {
-        westminsterPalace.setLatitude(51.4998418);
-        westminsterPalace.setLongitude(-0.1245903d);
-        westminsterPalace.setAltitude(96.0d);
-    }
-
+    
     String accelData = "Accelerometer Data";
     String compassData = "Compass Data";
     String gyroData = "Gyro Data";

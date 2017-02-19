@@ -37,13 +37,16 @@ public class GoogleElevation {
         try {
 
             // use BigDecimal in order to get rid of scientific notation e.g. 9.1694E-4
-            String test = String.format("%.8f", latitude);
             longitude = Double.parseDouble(""+longitude);
             latitude = Double.parseDouble(""+latitude);
+
+            BigDecimal bigDecimalLongitude = new BigDecimal(longitude);
+            BigDecimal bigDecimalLatitude = new BigDecimal(latitude);
+
             HttpRequestFactory httpRequestFactory = createRequestFactory(HTTP_TRANSPORT);
             HttpRequest request = httpRequestFactory
                     .buildGetRequest(new GenericUrl(ELEVATION_SEARCH_URL));
-            request.getUrl().put("locations", longitude + "," + latitude);
+            request.getUrl().put("locations", bigDecimalLongitude.toString() + "," + bigDecimalLatitude.toString());
             request.getUrl().put("key", API_KEY);
             String URL = ""+request.getUrl();
 
