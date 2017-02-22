@@ -431,13 +431,14 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                   public void onClick(View view)
                   {
                       if (indexIterator == 0 ){
-                          indexIterator = textList.size()/2;
+                          indexIterator = imageList.size()/2;
                       }
 
-                      if (indexIterator >= textList.size()) {
-                          imageList.get(indexIterator-1).setAlpha(0.5f);
-                          textList.get(indexIterator-1).setAlpha(0.5f);
-                          textList.get(indexIterator-1).setTextColor(Color.rgb(255,255,255));
+                      if (indexIterator >= imageList.size()) {
+                          System.out.println("Index iterator = " + indexIterator + " imageList size = " + imageList.size() + " textList size = " + textList.size());
+                          imageList.get(imageList.size()-1).setAlpha(0.5f);
+                          textList.get(textList.size()-1).setAlpha(0.5f);
+                          textList.get(textList.size()-1).setTextColor(Color.rgb(255,255,255));
                           indexIterator = textList.size()/2;
                       }
                       if (indexIterator >= 1){
@@ -803,7 +804,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                         Object[] foundPOIArray = foundPOIs.toArray();
                         ArrayList<Double> elevationListArray = new ArrayList<>(GoogleElevation.elevationList);
                         ArrayList<String> referenceNumArray = new ArrayList<>(referenceNum);
-                        for (int i = 0; i < foundPOIs.size(); i++){
+                        for (int i = 0; i < foundPOIArray.length-1; i++){
                             // dis[0] = lat, dis[1] = long
                             String[] dis = foundLoc.get(i).split(" ");
                             double poiLat = Double.parseDouble(dis[0]);

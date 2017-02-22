@@ -15,6 +15,7 @@
         android:label="PointR"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
+        android:largeHeap="true"
         tools:replace="android:icon">
         <meta-data
             android:name="com.google.android.geo.API_KEY"
