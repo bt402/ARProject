@@ -189,7 +189,7 @@ public class SettingsActivity extends Activity {
         resultIntent.putExtra("radius", radiusText);
         String POIString = PointOfInterestBuilder();
 
-        SharedPreferences sharedPreferences = getSharedPreferences("RefineSettings", 2);
+        SharedPreferences sharedPreferences = getSharedPreferences("RefineSettings", 0);
 
 
         if (POIString == ""){
@@ -218,6 +218,14 @@ public class SettingsActivity extends Activity {
             }
             if (poiBuilder!= "")
             POIString = poiBuilder;
+
+            // Add edited places to the shared preferences
+            SharedPreferences settingPreferences = getSharedPreferences("SettingsSave", 0);
+            SharedPreferences.Editor editor = settingPreferences.edit();
+
+            editor.putString("types", POIString);
+            editor.commit();
+
             resultIntent.putExtra("POI", POIString);
             setResult(Activity.RESULT_OK, resultIntent);
 
@@ -228,7 +236,7 @@ public class SettingsActivity extends Activity {
     public String PointOfInterestBuilder() {
         String poiBuilder = "";
         ArrayList<String> intrestList = new ArrayList<>();
-        SharedPreferences sharedPreferences = getSharedPreferences("SettingsSave", 1);
+        SharedPreferences sharedPreferences = getSharedPreferences("SettingsSave", 0);
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
 
@@ -341,7 +349,7 @@ public class SettingsActivity extends Activity {
     }
 
     private void SavePreferences() {
-        SharedPreferences sharedPreferences = getSharedPreferences("SettingsSave", 1);
+        SharedPreferences sharedPreferences = getSharedPreferences("SettingsSave", 0);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         // Radius of the search
         TextView distanceTxt = (TextView) findViewById(R.id.distanceText);
@@ -398,7 +406,7 @@ public class SettingsActivity extends Activity {
     }
 
     private void LoadPreferences() {
-        SharedPreferences sharedPreferences = getSharedPreferences("SettingsSave", 1);
+        SharedPreferences sharedPreferences = getSharedPreferences("SettingsSave", 0);
         String radiusState = sharedPreferences.getString("r", "1000 meters");
         TextView distanceTxt = (TextView) findViewById(R.id.distanceText);
         distanceTxt.setText(radiusState);

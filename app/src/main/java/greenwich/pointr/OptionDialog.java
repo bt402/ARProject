@@ -114,8 +114,9 @@ public class OptionDialog extends DialogFragment{
         }
 
     public void SavePreferences(Context context, String[] typesList, String name, int[] checked){
-        SharedPreferences sharedPreferences = context.getSharedPreferences("RefineSettings", 2);
+        SharedPreferences sharedPreferences = context.getSharedPreferences("RefineSettings", 0);
         SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.clear();
 
         String checkedStr = "";
         for (int i = 0; i < checked.length; i++){
@@ -327,7 +328,7 @@ public class OptionDialog extends DialogFragment{
     }
 
     public ArrayList<Integer> savedSelected(String name, Context context, int length){
-        SharedPreferences sharedPreferences = context.getSharedPreferences("RefineSettings", 2);
+        SharedPreferences sharedPreferences = context.getSharedPreferences("RefineSettings", 0);
         ArrayList<Integer> savedNum = new ArrayList<>();
         String defaultStr = "";
         for (int i = 0; i < length; i++){

@@ -126,7 +126,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         String typesState = "null";
         try {
             // Access settings
-            sharedPreferences = getSharedPreferences("SettingsSave", 1);
+            sharedPreferences = getSharedPreferences("SettingsSave", 0);
             radiusState = sharedPreferences.getString("r", "1000");
             typesState = sharedPreferences.getString("types", "null");
         }
