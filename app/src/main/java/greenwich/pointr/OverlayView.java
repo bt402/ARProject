@@ -16,6 +16,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -279,7 +280,6 @@ public class OverlayView extends View implements SensorEventListener,
                                 // draw our point -- we've rotated and translated this to the right spot already
 
                                 //System.out.println(directionPOIs.get(i) + " --> Position X: " + Math.abs(dx) + " Postion Y: " + Math.abs(dy));
-
                                 double testXVal = imageList.get(i).getX() + 270;
                                 double textYVal = imageList.get(i).getY() + 185;
                                 positionsX.add((double)testXVal);
@@ -310,10 +310,13 @@ public class OverlayView extends View implements SensorEventListener,
     public boolean onTouchEvent(MotionEvent event) {
         // 540, 1090
 
+        float myTouchX = event.getX();
+        float myTouchY = event.getY();
+
         //if (event.getX() >= 540 && event.getX() <= 640 && event.getY() >= 1090 && event.getY() <= 1190){
         if (positionsX != null && positionY != null){
         if (positionsX.size() == positionY.size()){
-            for (int i = 0; i < positionsX.size(); i++){
+            for (int i = 0; i < directionPOIs.size(); i++){
                 if (event.getX() >= Math.abs(positionsX.get(i)) && event.getX() <= Math.abs(positionsX.get(i)) + 320
                         && event.getY() >= Math.abs(positionY.get(i)) && event.getY() <= Math.abs(positionY.get(i)) + 235){
                     Toast toast = Toast.makeText(context, "message", Toast.LENGTH_LONG);
@@ -336,7 +339,7 @@ public class OverlayView extends View implements SensorEventListener,
         else {
             String radius;
             SharedPreferences sharedPreferences = null;
-            sharedPreferences = getContext().getSharedPreferences("SettingsSave", 1);
+            sharedPreferences = getContext().getSharedPreferences("SettingsSave", 0);
             String radiusState = sharedPreferences.getString("r", "1000");
             String[] radiusStateString = radiusState.split(" ");
             radius = radiusStateString[0];

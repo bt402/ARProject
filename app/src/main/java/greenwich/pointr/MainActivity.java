@@ -1,6 +1,7 @@
 package greenwich.pointr;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -16,6 +17,7 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -49,6 +51,10 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     Sensor accelerometer;
     Sensor magnetometer;
     private LocationManager mLocationManager;
+    private static Context applicationContext;
+    public static TextView errorMessageTextView;
+    public static TextView directionView;
+    public static TextView deg;
     public static LinkedHashSet<String> foundPOIs;
     public static ArrayList<String> foundLoc;
     public static ArrayList<String> directionPOIs;
@@ -100,7 +106,10 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         setContentView(R.layout.activity_main);
         // API KEY FOR Google Places
         // AIzaSyDGeooGmYLYSSX9P9zl9dWEXnUC2Dkpj9U
-
+        applicationContext = getApplicationContext();
+        errorMessageTextView  = (TextView) findViewById(R.id.textView);
+        directionView = (TextView) findViewById(R.id.textView2);
+        deg = (TextView) findViewById(R.id.textView2);
         // Check if Compass and/or Accelerometer are avaliable
         SensorDialog sensorDialog = new SensorDialog();
         sensorDialog.accelerometerExists(this);
@@ -214,21 +223,22 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         GSM.setImageResource(R.drawable.gsm);
         GSM.setScaleX(0.3f);
         GSM.setScaleY(0.3f);
-        GSM.setY((height-256) - 336);
+        GSM.setX(GSM.getX() + 40);
+        GSM.setY((height-256) - 250);
 
         final ImageButton WIFI = (ImageButton) findViewById(R.id.wifiBtn);
         WIFI.setImageResource(R.drawable.wifi);
         WIFI.setScaleY(0.3f);
         WIFI.setScaleX(0.3f);
         WIFI.setX(GSM.getX() + 150);
-        WIFI.setY((height-256) - 336);
+        WIFI.setY((height-256) - 250);
 
         final ImageButton GPS = (ImageButton) findViewById(R.id.gpsBtn);
         GPS.setImageResource(R.drawable.gps);
         GPS.setScaleX(0.2f);
         GPS.setScaleY(0.2f);
         GPS.setX((WIFI.getX()) + 150);
-        GPS.setY((height - 256) - 336);
+        GPS.setY((height - 256) - 250);
 
 
         GSM.setOnClickListener(new View.OnClickListener() {
@@ -677,7 +687,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
 
     private Location getLocation(){
         // http://stackoverflow.com/questions/20438627/getlastknownlocation-returns-null
-        mLocationManager = (LocationManager)getApplicationContext().getSystemService(LOCATION_SERVICE);
+        mLocationManager = (LocationManager)applicationContext.getSystemService(LOCATION_SERVICE);
         List<String> providers = mLocationManager.getProviders(true);
        if (bestLocation == null) {
            Location l = null;
@@ -747,7 +757,6 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         protected void onPostExecute(String file_url) {
             // dismiss the dialog after getting all products
             // updating UI from Background Thread
-            final TextView t = (TextView) findViewById(R.id.textView);
             runOnUiThread(new Runnable() {
                 public void run() {
                     /**
@@ -761,7 +770,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                         // Successfully got places details
                         if (nearPlaces.results != null) {
                             // loop through each place
-                            t.setText("");
+                            errorMessageTextView.setText("");
                             for (Place p : nearPlaces.results) {
                                 HashMap<String, String> map = new HashMap<String, String>();
 
@@ -794,12 +803,12 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                             }
 
                         }
-                        TextView directionView = (TextView) findViewById(R.id.textView2);
+
                         String[] arr = directionView.getText().toString().split(" ");
                         double kilometer = (int)Double.parseDouble(radius) / 1000;
                         double longitudeDir = kilometer / 111.2;
                         double latitudeDir = kilometer / 111.32;
-                        TextView deg = (TextView) findViewById(R.id.textView2);
+
                         String[] degrees = deg.getText().toString().split(" ");
                         Object[] foundPOIArray = foundPOIs.toArray();
                         ArrayList<Double> elevationListArray = new ArrayList<>(GoogleElevation.elevationList);
@@ -825,14 +834,14 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                         }
                     }
                     else if (status.equals("ZERO_RESULTS")){
-                        t.setText("No places in radius");
+                        errorMessageTextView.setText("No places in radius");
                         shuffleImg.setVisibility(View.INVISIBLE);
                     }
                     else if (status.equals("OVER_QUERY_LIMIT")){
-                        t.setText("OVER_QUERY_LIMIT");
+                        errorMessageTextView.setText("OVER_QUERY_LIMIT");
                     }
                     else if (directionPOIs.isEmpty()){
-                        t.setText("No places in radius");
+                        errorMessageTextView.setText("No places in radius");
                     }
                     //ListView lv = (ListView) findViewById(R.id.listView);
                     //lv.setAdapter(new ArrayAdapter<String>(MainActivity.this, R.layout.simple_list_item_1, directionPOIs));

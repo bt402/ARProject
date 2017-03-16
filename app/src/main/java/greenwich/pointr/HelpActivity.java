@@ -1,6 +1,7 @@
 package greenwich.pointr;
 
 import android.app.Activity;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.webkit.WebView;
@@ -16,6 +17,11 @@ public class HelpActivity extends Activity{
 
         ImageView helpImg = (ImageView) findViewById(R.id.questionMark);
         helpImg.setImageResource(android.R.drawable.ic_menu_help);
+
+        ImageView poweredByGoogle = (ImageView) findViewById(R.id.poweredByGoogle);
+        poweredByGoogle.setImageResource(R.drawable.powered_by_google_on_non_white);
+        poweredByGoogle.setScaleX(0.5f);
+        poweredByGoogle.setScaleY(0.5f);
 
         Uri gifUrl = Uri.parse("file:///android_res/drawable/compass.gif");
         WebView gif = (WebView) findViewById(R.id.myGif);
