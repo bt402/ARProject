@@ -178,6 +178,15 @@ public class SettingsActivity extends Activity {
         String[] distance = distanceTxt.getText().toString().split(" ");
         String radiusText = distance[0];
 
+        SmartSuggestions smartSuggestions = new SmartSuggestions();
+        try {
+            smartSuggestions.saveInstance("placeTest", "placeInstance");
+            smartSuggestions.checkInstance();
+        }
+        catch (Exception e){
+            System.out.println(e);
+        }
+
         if (distance[1].equals("yards")) {
             radiusText = "" + (int) (Double.parseDouble(distance[0]) / 1.0936);
         } else if (distance[1].equals("meters")) {
