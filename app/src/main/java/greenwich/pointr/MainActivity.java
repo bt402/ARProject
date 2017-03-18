@@ -17,6 +17,7 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.Gravity;
@@ -475,6 +476,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
 
 
     }
+
 
     public void recordData(String fileName) throws IOException {
         File file = new File(Environment.getExternalStorageDirectory() + File.separator + fileName + ".csv");
