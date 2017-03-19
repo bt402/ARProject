@@ -2,13 +2,9 @@ package greenwich.pointr;
 
 
 import android.os.Environment;
-import android.os.SystemClock;
-import android.provider.DocumentsContract;
-import android.support.design.widget.Snackbar;
 import android.util.Xml;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xmlpull.v1.XmlPullParser;
@@ -19,11 +15,8 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.StringWriter;
-import java.net.MalformedURLException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -70,12 +63,12 @@ public class SmartSuggestions {
 
         // open tag <timestamp>
         xmlSerializer.startTag("", "timestamp");
-        xmlSerializer.text("10 Mar 2017 5:24:01 pm");
+        xmlSerializer.text(getTimestamp());
         xmlSerializer.endTag("", "timestamp");
 
         // open tag <timestamp>
         xmlSerializer.startTag("", "timestamp");
-        xmlSerializer.text("13 Mar 2017 5:24:01 pm");
+        xmlSerializer.text(getTimestamp());
         xmlSerializer.endTag("", "timestamp");
 
         // open tag <timestamp>
@@ -148,8 +141,7 @@ public class SmartSuggestions {
 
         boolean frequent = isFrequent(timeStampList, placeName);
         if (frequent){
-            // make suggestion here
-            Snackbar snackbar = Snackbar.make(null, "", Snackbar.LENGTH_INDEFINITE);
+            MainActivity.instance.showSnackbar("test");
         }
     }
 

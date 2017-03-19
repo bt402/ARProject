@@ -96,6 +96,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     ImageView shuffleImg;
 
     private OverlayView arContent;
+    static MainActivity instance;
 
     public static double getMyElevation() {
         return myElevation;
@@ -107,6 +108,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         setContentView(R.layout.activity_main);
         // API KEY FOR Google Places
         // AIzaSyDGeooGmYLYSSX9P9zl9dWEXnUC2Dkpj9U
+        instance = this;
         applicationContext = getApplicationContext();
         errorMessageTextView  = (TextView) findViewById(R.id.textView);
         directionView = (TextView) findViewById(R.id.textView2);
@@ -316,9 +318,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                 }
             }
         });
-
     }
-
 
     public void addImg(double angle, String text, double elevation, final String reference){
         RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.myRelativeLayout);
@@ -475,6 +475,16 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
 
 
 
+    }
+
+    public void showSnackbar(String text){
+        Snackbar.make(findViewById(R.id.myCoordinatorLayout), text, Snackbar.LENGTH_INDEFINITE)
+                .setAction("PANIC BUTTON", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        // action here
+                    }
+                }).show();
     }
 
 
