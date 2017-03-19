@@ -5,6 +5,7 @@ import android.os.Environment;
 import android.util.Xml;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xmlpull.v1.XmlPullParser;
@@ -36,66 +37,54 @@ import javax.xml.transform.stream.StreamResult;
 
 public class SmartSuggestions {
 
-    public void saveInstance(String placeName, String placeInstance) throws Exception {
-        XmlSerializer xmlSerializer = Xml.newSerializer();
-        StringWriter xmlWriter = new StringWriter();
-        File xmlFile = new File(Environment.getExternalStorageDirectory() + File.separator + "data.xml");
-        xmlFile.createNewFile();
-        FileWriter fileWriter = new FileWriter(Environment.getExternalStorageDirectory() + File.separator + "data.xml");
+    public void saveInstance(String placeName, String placeTypes) throws Exception {
+            XmlSerializer xmlSerializer = Xml.newSerializer();
+            StringWriter xmlWriter = new StringWriter();
+            File xmlFile = new File(Environment.getExternalStorageDirectory() + File.separator + "data.xml");
+        if (!xmlFile.exists()) {
+            xmlFile.createNewFile();
+            FileWriter fileWriter = new FileWriter(Environment.getExternalStorageDirectory() + File.separator + "data.xml");
 
-        xmlSerializer.setOutput(xmlWriter);
-        xmlSerializer.startDocument("UTF-8", null);
+            xmlSerializer.setOutput(xmlWriter);
+            xmlSerializer.startDocument("UTF-8", null);
 
-        // open tag <instances>
-        xmlSerializer.startTag("", "instanceList");
-        // open tag <place>
-        xmlSerializer.startTag("", "place");
+            // open tag <instances>
+            xmlSerializer.startTag("", "instanceList");
+            // open tag <place>
+            xmlSerializer.startTag("", "place");
 
-        // open tag <placeName>
-        xmlSerializer.startTag("", "placeName");
-        xmlSerializer.text(placeName);
-        xmlSerializer.endTag("", "placeName");
+            // open tag <placeName>
+            xmlSerializer.startTag("", "placeName");
+            xmlSerializer.text(placeName);
+            xmlSerializer.endTag("", "placeName");
 
-        // open tag <types>
-        xmlSerializer.startTag("", "types");
-        xmlSerializer.text(placeInstance);
-        xmlSerializer.endTag("", "types");
+            // open tag <types>
+            xmlSerializer.startTag("", "types");
+            xmlSerializer.text(placeTypes);
+            xmlSerializer.endTag("", "types");
 
-        // open tag <timestamp>
-        xmlSerializer.startTag("", "timestamp");
-        xmlSerializer.text(getTimestamp());
-        xmlSerializer.endTag("", "timestamp");
+            // open tag <timestamp>
+            xmlSerializer.startTag("", "timestamp");
+            xmlSerializer.text(getTimestamp());
+            xmlSerializer.endTag("", "timestamp");
 
-        // open tag <timestamp>
-        xmlSerializer.startTag("", "timestamp");
-        xmlSerializer.text(getTimestamp());
-        xmlSerializer.endTag("", "timestamp");
+            // close tag </place>
+            xmlSerializer.endTag("", "place");
 
-        // open tag <timestamp>
-        xmlSerializer.startTag("", "timestamp");
-        xmlSerializer.text(getTimestamp());
-        xmlSerializer.endTag("", "timestamp");
+            // close tag <instances>
+            xmlSerializer.endTag("", "instanceList");
+            xmlSerializer.endDocument();
+            xmlSerializer.flush();
 
-        // open tag <timestamp>
-        xmlSerializer.startTag("", "timestamp");
-        xmlSerializer.text(getTimestamp());
-        xmlSerializer.endTag("", "timestamp");
-
-        // open tag <timestamp>
-        xmlSerializer.startTag("", "timestamp");
-        xmlSerializer.text(getTimestamp());
-        xmlSerializer.endTag("", "timestamp");
-
-        // close tag </place>
-        xmlSerializer.endTag("", "place");
-
-        // close tag <instances>
-        xmlSerializer.endTag("", "instanceList");
-        xmlSerializer.endDocument();
-        xmlSerializer.flush();
-
-        fileWriter.write(xmlWriter.toString());
-        fileWriter.close();
+            fileWriter.write(xmlWriter.toString());
+            fileWriter.close();
+        }
+        else if (placeExists(placeName)) {
+            saveChildNode(placeName);
+        }
+        else if (!placeExists(placeName)){
+            saveParent(placeName, placeTypes);
+        }
     }
 
     public void checkInstance() throws Exception{
@@ -141,8 +130,40 @@ public class SmartSuggestions {
 
         boolean frequent = isFrequent(timeStampList, placeName);
         if (frequent){
-            MainActivity.instance.showSnackbar("test");
+            MainActivity.instance.showSnackbar("Would you like to search for " + placeName, types);
         }
+    }
+
+    private boolean placeExists(String pName) throws Exception{
+        InputStream inputStream = new DataInputStream(new FileInputStream(Environment.getExternalStorageDirectory() + File.separator + "data.xml"));
+
+        boolean exists = false;
+        String placeName = "";
+
+        XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+
+        XmlPullParser parser = factory.newPullParser();
+        parser.setInput(inputStream, null);
+
+        while (parser.next() != XmlPullParser.END_DOCUMENT){
+            if (parser.getEventType() != XmlPullParser.START_TAG) {
+                continue;
+            }
+            String name = parser.getName();
+            // Starts by looking for the entry tag
+            if (name.equals("placeName")){
+                if (parser.next() == XmlPullParser.TEXT){
+                    placeName = parser.getText();
+                    parser.nextTag();
+                    if (placeName.equals(pName)) {
+                        exists = true;
+                        return exists;
+                    }
+                }
+            }
+        }
+
+        return exists;
     }
 
     private void deleteInstance(String id, Document document){
@@ -159,6 +180,52 @@ public class SmartSuggestions {
         }
         catch (Exception e){
             System.out.println(e);
+        }
+    }
+
+    private void saveChildNode(String placeName) throws Exception{
+        // Add timestamp to existing node
+        DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
+        DocumentBuilder docBuilder = dbfac.newDocumentBuilder();
+        Document doc = docBuilder.parse(new File(Environment.getExternalStorageDirectory() + File.separator + "data.xml"));
+
+        Element placeElement = doc.getDocumentElement();
+        Node placeChild = placeElement.getFirstChild();
+        Element timeStamp = doc.createElement("timestamp");
+        timeStamp.setTextContent(getTimestamp());
+        placeChild.appendChild(timeStamp);
+        try {
+            saveData(doc, Environment.getExternalStorageDirectory() + File.separator + "data.xml");
+        }
+        catch (Exception e){
+            System.out.println(e);
+        }
+    }
+
+    private void saveParent(String placeName, String types) throws Exception{
+        // Create new instance of a POI
+        DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
+        DocumentBuilder docBuilder = dbfac.newDocumentBuilder();
+        Document doc = docBuilder.parse(new File(Environment.getExternalStorageDirectory() + File.separator + "data.xml"));
+        Node existingNode = searchByID(placeName, doc);
+        if (existingNode == null){
+            // Create new parent node
+            Element element = doc.getDocumentElement();
+            Node placeNode = doc.createElement("place");
+            element.appendChild(placeNode);
+
+            Node placeNameNode = doc.createElement("placeName");
+            placeNameNode.setTextContent(placeName);
+            placeNode.appendChild(placeNameNode);
+
+            Node typeNode = doc.createElement("types");
+            typeNode.setTextContent(types);
+            placeNode.appendChild(typeNode);
+
+            Node timeStamp = doc.createElement("timestamp");
+            timeStamp.setTextContent(getTimestamp());
+            placeNode.appendChild(timeStamp);
+            saveData(doc, Environment.getExternalStorageDirectory() + File.separator + "data.xml");
         }
     }
 
@@ -196,10 +263,8 @@ public class SmartSuggestions {
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-            transformer.setOutputProperty(OutputKeys.METHOD, "html");
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty(OutputKeys.INDENT, "no");
             transformer.transform(source, result);
-            System.out.println("Save successfull");
         }
         catch (TransformerException te){
             System.out.println(te.getStackTrace());

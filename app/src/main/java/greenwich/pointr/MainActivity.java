@@ -18,7 +18,6 @@ import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
-import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -318,6 +317,13 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                 }
             }
         });
+
+        SmartSuggestions smartSuggestions = new SmartSuggestions();
+        try {
+            smartSuggestions.checkInstance();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void addImg(double angle, String text, double elevation, final String reference){
@@ -477,12 +483,19 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
 
     }
 
-    public void showSnackbar(String text){
-        Snackbar.make(findViewById(R.id.myCoordinatorLayout), text, Snackbar.LENGTH_INDEFINITE)
-                .setAction("PANIC BUTTON", new View.OnClickListener() {
+    public void showSnackbar(String text, final String type){
+        Snackbar.make(findViewById(R.id.myCoordinatorLayout), text, Snackbar.LENGTH_LONG)
+                .setAction("YES", new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        // action here
+                        System.out.println("test");
+                        types = type;
+                        loadPlaces = new LoadPlaces();
+                        loadPlaces.execute(radius);
+
+                        for (int i = 0; i < textList.size(); i++){
+                            textList.get(indexIterator).setTextColor(Color.rgb(277,2,2));
+                        }
                     }
                 }).show();
     }
