@@ -65,6 +65,9 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     static ArrayList<ImageView> imageList = new ArrayList<>();
     static ArrayList<TextView> textList = new ArrayList<>();
 
+    // Default text color is white
+    String hexColor = "#ffffff";
+
     // Google Places
     GooglePlaces googlePlaces;
 
@@ -369,7 +372,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
         txt.setWidth(270);
         txt.setHeight(185);
         txt.setSingleLine(false);
-        txt.setTextColor(Color.parseColor("#ffffff"));
+        txt.setTextColor(Color.parseColor(hexColor));
         txt.setX(xPos);
         txt.setY(yPos + 2);
 
@@ -484,18 +487,15 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     }
 
     public void showSnackbar(String text, final String type){
-        Snackbar.make(findViewById(R.id.myCoordinatorLayout), text, Snackbar.LENGTH_LONG)
+        Snackbar.make(findViewById(R.id.myCoordinatorLayout), text, Snackbar.LENGTH_INDEFINITE)
                 .setAction("YES", new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        System.out.println("test");
                         types = type;
+                        hexColor = "#a21c1c";
                         loadPlaces = new LoadPlaces();
                         loadPlaces.execute(radius);
 
-                        for (int i = 0; i < textList.size(); i++){
-                            textList.get(indexIterator).setTextColor(Color.rgb(277,2,2));
-                        }
                     }
                 }).show();
     }

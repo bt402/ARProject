@@ -67,7 +67,7 @@ public class OverlayView extends View implements SensorEventListener,
     ArrayList<Double> positionY;
 
     ArrayList<ImageView> imageList = new ArrayList<>();
-    ArrayList<TextView> textList = new ArrayList<>();
+    public static ArrayList<TextView> textList = new ArrayList<>();
 
     public OverlayView(Context context) {
         super(context);
