@@ -1,6 +1,7 @@
 package greenwich.pointr;
 
 
+import android.content.Context;
 import android.os.Environment;
 import android.util.Xml;
 
@@ -189,11 +190,11 @@ public class SmartSuggestions {
         DocumentBuilder docBuilder = dbfac.newDocumentBuilder();
         Document doc = docBuilder.parse(new File(Environment.getExternalStorageDirectory() + File.separator + "data.xml"));
 
-        Element placeElement = doc.getDocumentElement();
-        Node placeChild = placeElement.getFirstChild();
+        Node appendToNode = searchByID(placeName, doc);
+
         Element timeStamp = doc.createElement("timestamp");
         timeStamp.setTextContent(getTimestamp());
-        placeChild.appendChild(timeStamp);
+        appendToNode.appendChild(timeStamp);
         try {
             saveData(doc, Environment.getExternalStorageDirectory() + File.separator + "data.xml");
         }
@@ -248,7 +249,6 @@ public class SmartSuggestions {
             String content = list.item(i).getTextContent();
             if (content.equalsIgnoreCase(id)){
                 p = list.item(i).getParentNode();
-                String test = p.getTextContent();
                 return p;
             }
         }
