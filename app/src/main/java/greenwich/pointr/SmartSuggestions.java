@@ -152,23 +152,27 @@ public class SmartSuggestions {
         long xmin = dateFormat.parse(timeStampList.get(0)).getTime() / MILLI_TO_HOUR;
         long xmax = dateFormat.parse(timeStampList.get(timeStampList.size()-1)).getTime() / MILLI_TO_HOUR;
 
-        for (int i = 0; i < timeStampList.size(); i++){
-            long x = dateFormat.parse(timeStampList.get(i)).getTime() / MILLI_TO_HOUR;
-            xPrime = (x - xmin)/(xmax - xmin);
-            if (xPrime == 0){
-                noOfZeros++;
-            }
-            else if (xPrime == 1){
-                noOfOnes++;
-            }
-        }
-        if (noOfZeros > noOfOnes){
-            suggest = false;
-            return suggest;
-        }
-        else {
+        if (xmin == xmax){
             suggest = true;
             return suggest;
+        }
+        {
+            for (int i = 0; i < timeStampList.size(); i++) {
+                long x = dateFormat.parse(timeStampList.get(i)).getTime() / MILLI_TO_HOUR;
+                xPrime = (x - xmin) / (xmax - xmin);
+                if (xPrime == 0) {
+                    noOfZeros++;
+                } else if (xPrime == 1) {
+                    noOfOnes++;
+                }
+            }
+            if (noOfZeros > noOfOnes) {
+                suggest = false;
+                return suggest;
+            } else {
+                suggest = true;
+                return suggest;
+            }
         }
     }
 
