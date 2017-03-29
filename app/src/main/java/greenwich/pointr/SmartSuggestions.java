@@ -23,6 +23,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -103,8 +104,14 @@ public class SmartSuggestions {
         //parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
         parser.setInput(inputStream, null);
 
-        while (parser.next() != XmlPullParser.END_TAG){
+        while (parser.next() != XmlPullParser.END_DOCUMENT){
             if (parser.getEventType() != XmlPullParser.START_TAG) {
+                Collections.sort(timeStampList);
+                boolean frequent = isFrequent(timeStampList, placeName);
+                if (frequent){
+                    MainActivity.instance.showSnackbar("Would you like to search for " + placeName, types);
+                    timeStampList = new ArrayList<>();
+                }
                 continue;
             }
             String name = parser.getName();
@@ -128,10 +135,40 @@ public class SmartSuggestions {
                 }
             }
         }
+    }
 
-        boolean frequent = isFrequent(timeStampList, placeName);
-        if (frequent){
-            MainActivity.instance.showSnackbar("Would you like to search for " + placeName, types);
+    public boolean normalise(List<String> timeStampList)throws ParseException{
+        // Feature scaling normalization
+        long xPrime;
+        boolean suggest = false;
+
+        int noOfZeros = 0;
+        int noOfOnes = 0;
+
+        final int MILLI_TO_HOUR = 1000 * 60 * 60;
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss a");
+
+        // Convert to hours
+        long xmin = dateFormat.parse(timeStampList.get(0)).getTime() / MILLI_TO_HOUR;
+        long xmax = dateFormat.parse(timeStampList.get(timeStampList.size()-1)).getTime() / MILLI_TO_HOUR;
+
+        for (int i = 0; i < timeStampList.size(); i++){
+            long x = dateFormat.parse(timeStampList.get(i)).getTime() / MILLI_TO_HOUR;
+            xPrime = (x - xmin)/(xmax - xmin);
+            if (xPrime == 0){
+                noOfZeros++;
+            }
+            else if (xPrime == 1){
+                noOfOnes++;
+            }
+        }
+        if (noOfZeros > noOfOnes){
+            suggest = false;
+            return suggest;
+        }
+        else {
+            suggest = true;
+            return suggest;
         }
     }
 
@@ -308,14 +345,26 @@ public class SmartSuggestions {
         Date secondTimestamp;
         int hourlyDifference;
 
-        if (timeStampList.size() >= 5) {
+        // Normalise here
+
+        try {
+        if (Math.abs(hoursDifference(dateFormat.parse(timeStampList.get(timeStampList.size()-1)), dateFormat.parse(getTimestamp()))) >= 36){
+            DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
+            DocumentBuilder docBuilder = dbfac.newDocumentBuilder();
+            Document doc = docBuilder.parse(new File(Environment.getExternalStorageDirectory() + File.separator + "data.xml"));
+            deleteInstance(name, doc);
+        }
+        }
+        catch (Exception er){}
+
+       if (timeStampList.size() >= 5) {
             for (int i = 0; i < timeStampList.size() - 1; i++) {
                 try {
                     firstTimestamp = dateFormat.parse(timeStampList.get(i));
                     secondTimestamp = dateFormat.parse(timeStampList.get(i+1));
                     hourlyDifference = Math.abs(hoursDifference(firstTimestamp, secondTimestamp));
 
-                    if (hourlyDifference >= 36){
+                    if (!normalise(timeStampList)){
                         try {
                             DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
                             DocumentBuilder docBuilder = dbfac.newDocumentBuilder();

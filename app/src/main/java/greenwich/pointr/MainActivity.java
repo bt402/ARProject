@@ -487,7 +487,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
     }
 
     public void showSnackbar(String text, final String type){
-        Snackbar.make(findViewById(R.id.myCoordinatorLayout), text, Snackbar.LENGTH_INDEFINITE)
+        Snackbar.make(findViewById(R.id.myCoordinatorLayout), text, Snackbar.LENGTH_LONG)
                 .setAction("YES", new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -497,7 +497,7 @@ public class MainActivity extends Activity implements SensorEventListener, Locat
                         loadPlaces.execute(radius);
 
                     }
-                }).show();
+                }).setDuration(6000).show();
     }
 
 
